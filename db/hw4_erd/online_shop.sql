@@ -24,9 +24,9 @@ CREATE TABLE product (
 -- product  -> buy : 1:M, weak (non-identifying). product_id is only an FK.
 CREATE TABLE buy (
   customer_id INT NOT NULL,
-  buy_no      INT NOT NULL,
+  buy_num     INT NOT NULL,
   product_id  INT NOT NULL,
-  PRIMARY KEY (customer_id, buy_no),
+  PRIMARY KEY (customer_id, buy_num),
   CONSTRAINT fk_buy_customer
     FOREIGN KEY (customer_id) REFERENCES customer (customer_id),
   CONSTRAINT fk_buy_product
@@ -38,9 +38,9 @@ CREATE TABLE buy (
 CREATE TABLE delivery (
   delivery_id INT NOT NULL AUTO_INCREMENT,
   customer_id INT NOT NULL,
-  buy_no      INT NOT NULL,
+  buy_num     INT NOT NULL,
   PRIMARY KEY (delivery_id),
-  UNIQUE KEY uq_delivery_buy (customer_id, buy_no),
+  UNIQUE KEY uq_delivery_buy (customer_id, buy_num),
   CONSTRAINT fk_delivery_buy
-    FOREIGN KEY (customer_id, buy_no) REFERENCES buy (customer_id, buy_no)
+    FOREIGN KEY (customer_id, buy_num) REFERENCES buy (customer_id, buy_num)
 );
