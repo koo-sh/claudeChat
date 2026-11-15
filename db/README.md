@@ -6,4 +6,5 @@
 |---|---|
 | `hw3/` | HW3 (아직 올라온 파일 없음) |
 | [`hw4_erd/`](hw4_erd/) | HW4: 온라인 쇼핑몰 ERD SQL 스크립트와 관계 설명 |
+| [`term_project_melon/`](term_project_melon/) | 텀프로젝트: 멜론 앱 화면 3개 DB 설계 & API (팀 프로젝트) |
 | `quiz/` | 데이터베이스 퀴즈 생성 (아직 올라온 파일 없음) |
