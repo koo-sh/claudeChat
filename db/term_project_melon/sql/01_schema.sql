@@ -31,32 +31,22 @@ CREATE TABLE artist (
 );
 
 -- ---------------------------------------------------------------------
--- 3. album : 앨범
---    커버, 발매일, 국내/해외는 "앨범"의 속성 → song 에 두면 이행 종속(3NF 위반)
--- ---------------------------------------------------------------------
-CREATE TABLE album (
-    album_id      INT           NOT NULL AUTO_INCREMENT,
-    album_title   VARCHAR(200)  NOT NULL,
-    cover_url     VARCHAR(500)  NOT NULL,
-    release_date  DATE          NOT NULL,
-    region        ENUM('국내', '해외') NOT NULL,   -- 홈 > 최신음악 국내/해외 탭
-    PRIMARY KEY (album_id)
-);
-
--- ---------------------------------------------------------------------
--- 4. song : 곡
+-- 3. song : 곡
+--    커버, 발매일, 국내/해외도 곡 단위로 저장 (앨범 화면이 과제 범위 밖이라 album 테이블은 두지 않음)
+--    모든 컬럼이 song_id 하나에만 종속 → 3NF
 -- ---------------------------------------------------------------------
 CREATE TABLE song (
     song_id       INT           NOT NULL AUTO_INCREMENT,
-    album_id      INT           NOT NULL,
     song_title    VARCHAR(200)  NOT NULL,
+    cover_url     VARCHAR(500)  NOT NULL,          -- 커버 이미지
+    release_date  DATE          NOT NULL,          -- 홈 > 최신음악 정렬 기준
+    region        ENUM('국내', '해외') NOT NULL,   -- 홈 > 최신음악 국내/해외 탭
     duration_sec  INT           NOT NULL,          -- 재생 시간(초)
-    PRIMARY KEY (song_id),
-    FOREIGN KEY (album_id) REFERENCES album (album_id)
+    PRIMARY KEY (song_id)
 );
 
 -- ---------------------------------------------------------------------
--- 5. song_artist : 곡 ↔ 아티스트 (N:M)
+-- 4. song_artist : 곡 ↔ 아티스트 (N:M)
 --    "NEON — A20, A20 LITE" 처럼 한 곡에 아티스트 여러 명 → 1NF
 --    artist_order : 화면에 표시할 순서 (1 = 첫 번째)
 -- ---------------------------------------------------------------------
@@ -70,7 +60,7 @@ CREATE TABLE song_artist (
 );
 
 -- ---------------------------------------------------------------------
--- 6. chart : 차트 종류 (TOP100, HOT100, 비오고 흐린 날 ...)
+-- 5. chart : 차트 종류 (TOP100, HOT100, 비오고 흐린 날 ...)
 -- ---------------------------------------------------------------------
 CREATE TABLE chart (
     chart_id    INT          NOT NULL AUTO_INCREMENT,
@@ -80,7 +70,7 @@ CREATE TABLE chart (
 );
 
 -- ---------------------------------------------------------------------
--- 7. chart_entry : 시각별 차트 순위 ("오늘 23:00 기준")
+-- 6. chart_entry : 시각별 차트 순위 ("오늘 23:00 기준")
 --    순위 변동은 저장하지 않고 직전 chart_time 과 비교해서 계산
 -- ---------------------------------------------------------------------
 CREATE TABLE chart_entry (
@@ -95,7 +85,7 @@ CREATE TABLE chart_entry (
 );
 
 -- ---------------------------------------------------------------------
--- 8. play_queue : 재생목록 (지금 듣는 곡 대기열)
+-- 7. play_queue : 재생목록 (지금 듣는 곡 대기열)
 --    position   : "내설정순" 순서 (1, 2, 3 ...)
 --    is_current : 지금 재생 중인 곡이면 1 (사용자당 1곡만 1이어야 함 → API 에서 관리)
 --    같은 곡을 두 번 넣을 수 있어서 PK 는 (user_id, position)
@@ -112,7 +102,7 @@ CREATE TABLE play_queue (
 );
 
 -- ---------------------------------------------------------------------
--- 9. song_like : 곡 좋아요
+-- 8. song_like : 곡 좋아요
 --    liked_at : "최신순" 정렬 기준
 -- ---------------------------------------------------------------------
 CREATE TABLE song_like (
@@ -125,7 +115,7 @@ CREATE TABLE song_like (
 );
 
 -- ---------------------------------------------------------------------
--- 10. play_history : 재생 기록 (한 번 들을 때마다 1행)
+-- 9. play_history : 재생 기록 (한 번 들을 때마다 1행)
 --    좋아요 > "많이 들은"(COUNT), "잊고 지낸"(MAX(played_at)) 계산용
 -- ---------------------------------------------------------------------
 CREATE TABLE play_history (

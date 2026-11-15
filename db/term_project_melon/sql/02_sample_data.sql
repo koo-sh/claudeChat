@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 샘플 데이터
 --   곡명, 아티스트명, 차트 순위, 재생목록, 좋아요 목록은 스크린샷(2026-11-15 23시경)에서 가져옴
---   ※ 앨범명, 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트는 테스트용 "임의 값"
+--   ※ 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트는 테스트용 "임의 값"
 --   ※ 'Sample Song' / 'Sample Artist' 는 해외 탭 테스트용 가짜 데이터
 --   실행 순서: 01_schema.sql → 02_sample_data.sql
 -- =====================================================================
@@ -32,39 +32,22 @@ INSERT INTO artist (artist_id, artist_name) VALUES
 (12, 'Sample Artist');
 
 -- ---------------------------------------------------------------------
--- album  (앨범명, 발매일, 커버 URL 은 임의 값)
+-- song  (커버 URL, 발매일, 재생시간은 임의 값)
 --   최신음악 화면의 왼쪽→오른쪽 순서가 나오도록 발매일을 최신순으로 배치
 -- ---------------------------------------------------------------------
-INSERT INTO album (album_id, album_title, cover_url, release_date, region) VALUES
-(1,  '사랑하면',                        'https://example.com/cover/1.jpg',  '2026-11-14', '국내'),
-(2,  'RAPLIFE',                         'https://example.com/cover/2.jpg',  '2026-11-13', '국내'),
-(3,  '선물',                            'https://example.com/cover/3.jpg',  '2026-11-12', '국내'),
-(4,  '강강술래',                        'https://example.com/cover/4.jpg',  '2026-11-11', '국내'),
-(5,  'Love S.O.S',                      'https://example.com/cover/5.jpg',  '2026-11-10', '국내'),
-(6,  '신의 악단 OST',                   'https://example.com/cover/6.jpg',  '2026-11-09', '국내'),
-(7,  'OLVISMYPRODUCER',                 'https://example.com/cover/7.jpg',  '2026-11-08', '국내'),
-(8,  'Sample Album',                    'https://example.com/cover/8.jpg',  '2026-11-07', '해외'),
-(9,  'RESCENE 앨범 (With 수록)',        'https://example.com/cover/9.jpg',  '2026-10-20', '국내'),
-(10, 'RESCENE 앨범 (LOVE ATTACK 수록)', 'https://example.com/cover/10.jpg', '2025-03-04', '국내'),
-(11, 'NEON',                            'https://example.com/cover/11.jpg', '2026-09-01', '국내'),
-(12, '꿈꾸던 어른이 되었나요?',         'https://example.com/cover/12.jpg', '2026-08-15', '국내');
-
--- ---------------------------------------------------------------------
--- song  (재생시간은 임의 값)
--- ---------------------------------------------------------------------
-INSERT INTO song (song_id, album_id, song_title, duration_sec) VALUES
-(1,  9,  'With',                                  198),
-(2,  10, 'LOVE ATTACK',                           185),
-(3,  11, 'NEON',                                  203),
-(4,  1,  '사랑하면',                              241),
-(5,  2,  'RAPLIFE',                               176),
-(6,  3,  '선물',                                  222),
-(7,  4,  '강강술래',                              169),
-(8,  5,  'Love S.O.S',                            210),
-(9,  6,  '영화 ''신의 악단'' Special Track. 3',  233),
-(10, 7,  'OLVISMYPRODUCER',                       158),
-(11, 12, '꿈꾸던 어른이 되었나요?',               215),
-(12, 8,  'Sample Song',                           190);
+INSERT INTO song (song_id, song_title, cover_url, release_date, region, duration_sec) VALUES
+(1,  'With',                                  'https://example.com/cover/1.jpg',  '2026-10-20', '국내', 198),
+(2,  'LOVE ATTACK',                           'https://example.com/cover/2.jpg',  '2025-03-04', '국내', 185),
+(3,  'NEON',                                  'https://example.com/cover/3.jpg',  '2026-09-01', '국내', 203),
+(4,  '사랑하면',                              'https://example.com/cover/4.jpg',  '2026-11-14', '국내', 241),
+(5,  'RAPLIFE',                               'https://example.com/cover/5.jpg',  '2026-11-13', '국내', 176),
+(6,  '선물',                                  'https://example.com/cover/6.jpg',  '2026-11-12', '국내', 222),
+(7,  '강강술래',                              'https://example.com/cover/7.jpg',  '2026-11-11', '국내', 169),
+(8,  'Love S.O.S',                            'https://example.com/cover/8.jpg',  '2026-11-10', '국내', 210),
+(9,  '영화 ''신의 악단'' Special Track. 3',  'https://example.com/cover/9.jpg',  '2026-11-09', '국내', 233),
+(10, 'OLVISMYPRODUCER',                       'https://example.com/cover/10.jpg', '2026-11-08', '국내', 158),
+(11, '꿈꾸던 어른이 되었나요?',               'https://example.com/cover/11.jpg', '2026-08-15', '국내', 215),
+(12, 'Sample Song',                           'https://example.com/cover/12.jpg', '2026-11-07', '해외', 190);
 
 -- ---------------------------------------------------------------------
 -- song_artist  (NEON 은 아티스트 2명 → 1NF 예시)

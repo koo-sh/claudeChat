@@ -46,9 +46,9 @@
   <img src="images/view3_like_songs.jpg" width="220">
 </p>
 
-## 기초 테이블 (10개)
+## 기초 테이블 (9개)
 
-`users`, `artist`, `album`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
+`users`, `artist`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
 → 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
 
 ![ERD](images/erd.png)

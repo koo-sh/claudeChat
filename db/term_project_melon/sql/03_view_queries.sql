@@ -17,16 +17,15 @@ SET @region = NULL;
 SELECT s.song_id,
        s.song_title,
        GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
-       al.cover_url,
-       al.release_date,
-       al.region
+       s.cover_url,
+       s.release_date,
+       s.region
 FROM song s
-JOIN album al       ON al.album_id = s.album_id
 JOIN song_artist sa ON sa.song_id  = s.song_id
 JOIN artist ar      ON ar.artist_id = sa.artist_id
-WHERE (@region IS NULL OR al.region = @region)
-GROUP BY s.song_id, s.song_title, al.cover_url, al.release_date, al.region
-ORDER BY al.release_date DESC, s.song_id
+WHERE (@region IS NULL OR s.region = @region)
+GROUP BY s.song_id, s.song_title, s.cover_url, s.release_date, s.region
+ORDER BY s.release_date DESC, s.song_id
 LIMIT 8;
 
 -- =====================================================================
@@ -47,19 +46,18 @@ SELECT cur.chart_time                       AS base_time,
        s.song_id,
        s.song_title,
        GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
-       al.cover_url
+       s.cover_url
 FROM chart_entry cur
 LEFT JOIN chart_entry prev
        ON prev.chart_id   = cur.chart_id
       AND prev.chart_time = @prev_time
       AND prev.song_id    = cur.song_id
 JOIN song s         ON s.song_id   = cur.song_id
-JOIN album al       ON al.album_id = s.album_id
 JOIN song_artist sa ON sa.song_id  = s.song_id
 JOIN artist ar      ON ar.artist_id = sa.artist_id
 WHERE cur.chart_id = @chart_id
   AND cur.chart_time = @cur_time
-GROUP BY cur.chart_time, cur.rank_no, prev.rank_no, s.song_id, s.song_title, al.cover_url
+GROUP BY cur.chart_time, cur.rank_no, prev.rank_no, s.song_id, s.song_title, s.cover_url
 ORDER BY cur.rank_no;
 
 -- =====================================================================
@@ -69,15 +67,14 @@ SELECT q.position,
        s.song_id,
        s.song_title,
        GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
-       al.cover_url
+       s.cover_url
 FROM play_queue q
 JOIN song s         ON s.song_id   = q.song_id
-JOIN album al       ON al.album_id = s.album_id
 JOIN song_artist sa ON sa.song_id  = s.song_id
 JOIN artist ar      ON ar.artist_id = sa.artist_id
 WHERE q.user_id = @user_id
   AND q.is_current = 1
-GROUP BY q.position, s.song_id, s.song_title, al.cover_url;
+GROUP BY q.position, s.song_id, s.song_title, s.cover_url;
 
 -- =====================================================================
 -- ② 재생목록 - 곡 수 ("2곡")
@@ -94,14 +91,13 @@ SELECT q.position,
        s.song_id,
        s.song_title,
        GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
-       al.cover_url
+       s.cover_url
 FROM play_queue q
 JOIN song s         ON s.song_id   = q.song_id
-JOIN album al       ON al.album_id = s.album_id
 JOIN song_artist sa ON sa.song_id  = s.song_id
 JOIN artist ar      ON ar.artist_id = sa.artist_id
 WHERE q.user_id = @user_id
-GROUP BY q.position, q.is_current, s.song_id, s.song_title, al.cover_url
+GROUP BY q.position, q.is_current, s.song_id, s.song_title, s.cover_url
 ORDER BY q.position;
 
 -- =====================================================================
@@ -111,14 +107,13 @@ SELECT l.liked_at,
        s.song_id,
        s.song_title,
        GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
-       al.cover_url
+       s.cover_url
 FROM song_like l
 JOIN song s         ON s.song_id   = l.song_id
-JOIN album al       ON al.album_id = s.album_id
 JOIN song_artist sa ON sa.song_id  = s.song_id
 JOIN artist ar      ON ar.artist_id = sa.artist_id
 WHERE l.user_id = @user_id
-GROUP BY l.liked_at, s.song_id, s.song_title, al.cover_url
+GROUP BY l.liked_at, s.song_id, s.song_title, s.cover_url
 ORDER BY l.liked_at DESC;
 
 -- =====================================================================
@@ -129,15 +124,14 @@ SELECT s.song_id,
        (SELECT GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ')
           FROM song_artist sa JOIN artist ar ON ar.artist_id = sa.artist_id
          WHERE sa.song_id = s.song_id)       AS artists,
-       al.cover_url,
+       s.cover_url,
        COUNT(h.history_id)                  AS play_count
 FROM song_like l
 JOIN song s          ON s.song_id   = l.song_id
-JOIN album al        ON al.album_id = s.album_id
 LEFT JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
-GROUP BY s.song_id, s.song_title, al.cover_url
+GROUP BY s.song_id, s.song_title, s.cover_url
 ORDER BY play_count DESC, s.song_id;
 
 -- =====================================================================
@@ -148,15 +142,14 @@ SELECT s.song_id,
        (SELECT GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ')
           FROM song_artist sa JOIN artist ar ON ar.artist_id = sa.artist_id
          WHERE sa.song_id = s.song_id)       AS artists,
-       al.cover_url,
+       s.cover_url,
        MAX(h.played_at)                     AS last_played_at
 FROM song_like l
 JOIN song s          ON s.song_id   = l.song_id
-JOIN album al        ON al.album_id = s.album_id
 LEFT JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
-GROUP BY s.song_id, s.song_title, al.cover_url
+GROUP BY s.song_id, s.song_title, s.cover_url
 HAVING last_played_at IS NULL
     OR last_played_at < DATE_SUB(@now, INTERVAL 30 DAY)
 ORDER BY last_played_at;
