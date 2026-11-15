@@ -3,6 +3,7 @@
 멜론 음악 앱의 화면 3개를 골라, 그 화면을 그리는 데 필요한 **데이터베이스를 설계**하고 **API를 개발**하는 4인 팀 프로젝트예요.
 
 > **팀원 읽는 순서**
+> 0. 문서 여는 법: VSCode로 이 폴더를 열고 .md 파일에서 `Ctrl + Shift + V`(미리보기). 메모장으로 열면 표가 깨져 보여요.
 > 1. 이 README (5분)
 > 2. [`docs/00_진행계획.md`](docs/00_진행계획.md): 전체 일정, 역할, 할 일 (10분)
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
@@ -15,6 +16,11 @@
 - **발표 (10분 + Q&A 5분)**: 앱/화면 소개 → DB 설계 → API
 - **보고서**: 앱/화면 소개, DB 설계(테이블, 쿼리, 데이터셋, ERD), API(입력값, JSON 출력)
 - 사용 도구 (Week9_2): **Python, VSCode, Postman, MySQL**
+
+## 파일 공유 방식
+
+GitHub 대신 **팀 카톡방 + ZIP**으로 공유해요. 관리자 1명이 파일을 합쳐서 새 ZIP을 올려요.
+고친 파일은 관리자에게 보내 주세요. 자세한 규칙은 [`docs/00_진행계획.md`](docs/00_진행계획.md) 7절에 있어요.
 
 ## 일정
 
@@ -46,7 +52,9 @@
 ## 기초 테이블 (10개)
 
 `users`, `artist`, `album`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
-→ ERD와 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
+→ 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
+
+![ERD](images/erd.png)
 
 ## 문서와 파일
 
@@ -57,7 +65,9 @@
 | [`docs/02_DB설계.md`](docs/02_DB설계.md) | ERD, 테이블, 정규화 근거, Q&A 대비 | ✅ 초안 |
 | [`docs/03_결정사항.md`](docs/03_결정사항.md) | 결정할 것과 결정된 것 | 🔶 의견 필요 |
 | [`docs/04_API명세.md`](docs/04_API명세.md) | API 목록, JSON 응답 예시 | 🔶 목록만 |
-| [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL 실행 방법과 기대 결과 | ✅ |
+| [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL 실행 방법과 기대 결과, md 여는 법 | ✅ |
+| [`images/erd.png`](images/erd.png) | ERD 이미지 | ✅ 초안 |
+| [`변경내역.md`](변경내역.md) | ZIP 버전별 변경 기록 | ✅ |
 | [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE | ✅ 실행 확인 |
 | [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 스크린샷 기반 샘플 데이터 | ✅ 실행 확인 |
 | [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT | ✅ 실행 확인 |
@@ -68,7 +78,8 @@
 ```
 term_project_melon/
 ├── README.md        ← 지금 이 문서
-├── images/          ← 앱 스크린샷 (ERD 이미지도 여기에 추가 예정)
+├── 변경내역.md      ← ZIP 버전별로 뭐가 바뀌었는지
+├── images/          ← 앱 스크린샷, ERD 이미지(erd.png)
 ├── docs/            ← 계획, 분석, 설계, 결정사항, API 명세, 실행 가이드
 ├── sql/             ← 01 스키마 → 02 샘플 데이터 → 03 화면별 쿼리
 └── api/             ← Flask API (Phase 2)
