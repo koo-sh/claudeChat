@@ -9,6 +9,13 @@
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
 > 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL 실행해 보기
 
+## AI(Claude, ChatGPT, Gemini 등)와 같이 작업할 때
+
+[`AI용_전체자료.md`](AI용_전체자료.md) **파일 하나만 AI에 첨부**하면 돼요. 문서와 SQL이 전부 들어 있고, AI가 지켜야 할 규칙(정해진 것, 바꾸면 안 되는 것)도 맨 위에 적혀 있어요.
+- 맨 위 "팀원용: AI에게 이렇게 물어보세요"의 문장을 복사해서 쓰면 돼요.
+- 화면을 보여주고 싶으면 `images/`의 스크린샷도 같이 첨부해요. 과제 원문은 `참고자료/TP_DB_과제공지.pdf`에 있어요.
+- AI가 고쳐 준 파일은 "어떤 파일의 어디를 왜 고쳤는지" 한 줄과 함께 관리자에게 보내 주세요.
+
 ## 과제 요구사항 (TP_DB.pdf 요약)
 
 - 모바일 앱 1개 + 화면 3개 이상 선택
@@ -66,6 +73,9 @@
 | [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL 실행 방법과 기대 결과, md 여는 법 | ✅ |
 | [`images/erd.png`](images/erd.png) | ERD 이미지 | ✅ 초안 |
 | [`변경내역.md`](변경내역.md) | ZIP 버전별 변경 기록 | ✅ |
+| [`AI용_전체자료.md`](AI용_전체자료.md) | AI에 첨부할 통합 파일 (문서 + SQL 전부, ZIP 만들 때 자동 생성) | ✅ |
+| `images/` | 앱 스크린샷 3장 (`view1_home.jpg`, `view2_play_queue.jpg`, `view3_like_songs.jpg`) | ✅ |
+| [`참고자료/TP_DB_과제공지.pdf`](참고자료/TP_DB_과제공지.pdf) | 교수님 과제 공지 원문 | ✅ |
 | [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE 9개 + CREATE VIEW 1개 | ✅ 실행 확인 |
 | [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 스크린샷 기반 샘플 데이터 | ✅ 실행 확인 |
 | [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT | ✅ 실행 확인 |
