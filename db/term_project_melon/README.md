@@ -46,11 +46,11 @@
   <img src="images/view3_like_songs.jpg" width="220">
 </p>
 
-## 기초 테이블 (9개)
+## 기초 테이블 (9개) + VIEW 1개
 
-`users`, `artist`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
-+ VIEW `song_info` (곡 정보 + 아티스트 이름 합친 것)
-→ 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
+- 테이블: `users`, `artist`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
+- VIEW: `song_info` (곡 정보 + 아티스트 이름을 한 줄로 합친 것)
+- 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
 
 ![ERD](images/erd.png)
 
@@ -58,7 +58,7 @@
 
 | 파일 | 내용 | 상태 |
 |---|---|---|
-| [`docs/00_진행계획.md`](docs/00_진행계획.md) | 일정, 역할(A~D), 단계별 할 일, 발표와 보고서 구성안 | ✅ |
+| [`docs/00_진행계획.md`](docs/00_진행계획.md) | 진행 순서, 역할(A~D), 단계별 할 일, 발표와 보고서 구성안, 파일 공유 규칙 | ✅ |
 | [`docs/01_화면분석.md`](docs/01_화면분석.md) | 화면별 필요 데이터 | ✅ |
 | [`docs/02_DB설계.md`](docs/02_DB설계.md) | ERD, 테이블, 정규화 근거, Q&A 대비 | ✅ 초안 |
 | [`docs/03_결정사항.md`](docs/03_결정사항.md) | 결정할 것과 결정된 것 | 🔶 의견 필요 |
@@ -66,7 +66,7 @@
 | [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL 실행 방법과 기대 결과, md 여는 법 | ✅ |
 | [`images/erd.png`](images/erd.png) | ERD 이미지 | ✅ 초안 |
 | [`변경내역.md`](변경내역.md) | ZIP 버전별 변경 기록 | ✅ |
-| [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE | ✅ 실행 확인 |
+| [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE 9개 + CREATE VIEW 1개 | ✅ 실행 확인 |
 | [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 스크린샷 기반 샘플 데이터 | ✅ 실행 확인 |
 | [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT | ✅ 실행 확인 |
 | `api/` | Flask API | ⬜ Phase 2 |

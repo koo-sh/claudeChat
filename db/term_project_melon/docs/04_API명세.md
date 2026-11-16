@@ -1,7 +1,7 @@
 # 04. API 명세 (초안)
 
 > 상태: **API 목록 초안**. 응답 형식과 JSON 예시는 Phase 2~3에서 B, C가 구현하면서 Postman 캡처로 채워요.
-> 쿼리는 [`../sql/03_view_queries.sql`](../sql/03_view_queries.sql)에 이미 있어요. API는 그 쿼리를 실행해서 JSON으로 바꿔 주면 돼요.
+> 쿼리는 [`../sql/03_view_queries.sql`](../sql/03_view_queries.sql)에 이미 있어요. API는 쿼리의 `@변수` 자리(`@user_id`, `@region`, `@chart_id`)에 입력값을 넣어 실행하고, 결과를 JSON으로 바꿔 주면 돼요.
 
 - 서버: Python **Flask** + **pymysql**
 - 주소: `http://localhost:5000`
