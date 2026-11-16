@@ -49,6 +49,7 @@
 ## 기초 테이블 (9개)
 
 `users`, `artist`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history`
++ VIEW `song_info` (곡 정보 + 아티스트 이름 합친 것)
 → 설명은 [`docs/02_DB설계.md`](docs/02_DB설계.md)
 
 ![ERD](images/erd.png)

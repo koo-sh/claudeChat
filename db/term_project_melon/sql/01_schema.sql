@@ -128,3 +128,22 @@ CREATE TABLE play_history (
     FOREIGN KEY (song_id) REFERENCES song (song_id),
     INDEX idx_history_user_song (user_id, song_id, played_at)
 );
+
+-- =====================================================================
+-- VIEW. song_info : 곡 정보 + 아티스트 이름을 한 줄로 합친 것
+--   저장은 1NF로 나눠서(song_artist), 화면에 보여줄 때만 "A20, A20 LITE" 처럼 합침
+--   VIEW 는 데이터를 따로 저장하지 않음 → 테이블들은 그대로 3NF
+--   화면별 쿼리(03_view_queries.sql)는 모두 이 VIEW 를 JOIN 해서 사용
+-- =====================================================================
+CREATE VIEW song_info AS
+SELECT s.song_id,
+       s.song_title,
+       GROUP_CONCAT(ar.artist_name ORDER BY sa.artist_order SEPARATOR ', ') AS artists,
+       s.cover_url,
+       s.release_date,
+       s.region,
+       s.duration_sec
+FROM song s
+JOIN song_artist sa ON sa.song_id   = s.song_id
+JOIN artist ar      ON ar.artist_id = sa.artist_id
+GROUP BY s.song_id, s.song_title, s.cover_url, s.release_date, s.region, s.duration_sec;
