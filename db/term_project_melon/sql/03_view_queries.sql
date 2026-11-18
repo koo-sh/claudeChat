@@ -83,17 +83,20 @@ WHERE l.user_id = @user_id
 ORDER BY l.liked_at DESC;
 
 -- =====================================================================
--- ③ 좋아요 > 곡 - 많이 들은 (재생 횟수 많은 순)
---   LEFT JOIN : 한 번도 안 들은 좋아요 곡도 0회로 나오게
+-- ③ 좋아요 > 곡 - 많이 들은 (3회 이상 들은 좋아요 곡, 재생 횟수 많은 순)  ※ 결정사항 #13
+--   HAVING : COUNT 로 묶은 뒤의 값으로 거를 때는 WHERE 가 아니라 HAVING
 -- =====================================================================
+SET @min_play = 3;
+
 SELECT si.song_id, si.song_title, si.artists, si.cover_url,
        COUNT(h.history_id) AS play_count
 FROM song_like l
 JOIN song_info si ON si.song_id = l.song_id
-LEFT JOIN play_history h
+JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
 GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
+HAVING play_count >= @min_play
 ORDER BY play_count DESC, si.song_id;
 
 -- =====================================================================

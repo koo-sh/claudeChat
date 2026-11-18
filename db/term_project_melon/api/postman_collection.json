@@ -1,0 +1,423 @@
+{
+  "info": {
+    "name": "멜론 텀프로젝트 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "DB 텀프로젝트 멜론 API 11개. base_url 변수 = http://localhost:5000"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    }
+  ],
+  "item": [
+    {
+      "name": "① 홈",
+      "item": [
+        {
+          "name": "1. 최신음악 (전체)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/home/new-songs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "home",
+                "new-songs"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "1. 최신음악 (해외)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/home/new-songs?region=해외&limit=8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "home",
+                "new-songs"
+              ],
+              "query": [
+                {
+                  "key": "region",
+                  "value": "해외"
+                },
+                {
+                  "key": "limit",
+                  "value": "8"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "2. 멜론차트 TOP100",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/home/chart?chart_id=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "home",
+                "chart"
+              ],
+              "query": [
+                {
+                  "key": "chart_id",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "2. 멜론차트 HOT100",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/home/chart?chart_id=2&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "home",
+                "chart"
+              ],
+              "query": [
+                {
+                  "key": "chart_id",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "3. 미니플레이어 (현재 재생 곡)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/now-playing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "now-playing"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "② 재생목록",
+      "item": [
+        {
+          "name": "4. 재생목록 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/queue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "queue"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "5. 재생목록에 곡 추가",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/queue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "queue"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"song_id\": 4}"
+            }
+          }
+        },
+        {
+          "name": "6. 현재 재생 곡 변경",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/queue/current",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "queue",
+                "current"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"position\": 3}"
+            }
+          }
+        },
+        {
+          "name": "7. 재생목록에서 곡 빼기",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/queue/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "queue",
+                "1"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "③ 좋아요 > 곡",
+      "item": [
+        {
+          "name": "8. 좋아요 곡 - 전체(최신순)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/likes/songs?filter=all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "likes",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "all"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8. 좋아요 곡 - 많이 들은",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/likes/songs?filter=most",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "likes",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "most"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "8. 좋아요 곡 - 잊고 지낸",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/likes/songs?filter=forgotten",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "likes",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "forgotten"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "9. 좋아요 추가",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/likes/songs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "likes",
+                "songs"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"song_id\": 3}"
+            }
+          }
+        },
+        {
+          "name": "10. 좋아요 취소",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/likes/songs/3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "likes",
+                "songs",
+                "3"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "④ 재생 기록",
+      "item": [
+        {
+          "name": "11. 재생 기록 추가 (곡 1번 듣기)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/1/plays",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "plays"
+              ]
+            },
+            "description": "LOVE ATTACK 을 1번 들은 것으로 기록. 3번 보낸 뒤 '8. 좋아요 곡 - 많이 들은' 을 다시 보내면 LOVE ATTACK 이 추가돼요.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"song_id\": 2}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # AI용 전체자료: 멜론 DB 텀프로젝트
 
-> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL)가 들어 있어요.** ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
+> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL + API 코드)가 들어 있어요.** (버전 v3.0) ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
 > 이 파일은 ZIP을 만들 때 자동으로 합쳐서 만들어요. **직접 고치지 말고**, 고칠 내용은 원본 파일(`docs/`, `sql/`)에서 고쳐 주세요.
 
 ---
@@ -26,11 +26,12 @@
 당신은 대학교 "데이터베이스" 과목의 4인 팀 프로젝트를 돕는 조수예요. 사용자는 이 팀의 팀원 한 명이에요.
 
 ### 프로젝트 한 줄 요약
-멜론(Melon) 음악 앱의 화면 3개(**홈**, **재생목록**, **음악서랍 > 좋아요 > 곡**)를 그리는 데 필요한 **MySQL 데이터베이스를 설계**하고, 각 화면용 **API를 Python Flask로 개발**한 뒤, **보고서와 10분 발표**로 제출해요.
+멜론(Melon) 음악 앱의 화면 3개(**홈**, **재생목록**, **음악서랍 > 좋아요 > 곡**)를 그리는 데 필요한 **MySQL 데이터베이스를 설계**하고, 각 화면용 **API를 Python Flask로 개발**한 뒤, **보고서와 10분 발표**로 제출해요. 제출 마감은 11/29(일) 23:59예요.
 
 ### 현재 상태
-- **완료**: 진행 계획, 화면 분석, 테이블 설계(9개 + VIEW 1개, 3NF), ERD 초안, 샘플 데이터, 화면별 SELECT 쿼리 8개(실행 확인함), API 목록 초안
-- **다음**: 1단계 킥오프(역할 배정, 남은 결정사항 정하기, 날짜 정하기) → 2단계 DB 확정 + Flask API 개발 → 3단계 Postman 테스트 → 4단계 보고서와 슬라이드 → 5단계 제출과 발표
+- **완료**: 진행 계획, 화면 분석, 테이블 설계(9개 + VIEW 1개, 3NF), ERD, 샘플 데이터(사용자 3, 곡 15, 차트 10위), 화면별 SELECT 쿼리 8개, **Flask API 11개(`api/app.py`, 실행 확인함)**, Postman 컬렉션, **보고서·발표 슬라이드 초안**(`report/`)
+- **남은 것**: `00_진행계획.md` 2절 체크리스트의 빈칸이에요. 예: 역할·발표자 이름 채우기, PPT 14번을 실제 Postman 캡처로 교체, MySQL 8에서 최종 확인, 리허설, 제출
+- 보고서(.docx)와 PPT(.pptx)는 이 파일에 들어 있지 않아요. 필요하면 `report/` 폴더의 파일을 따로 첨부해 달라고 하세요.
 - 역할 A(DB), B(API 홈), C(API 재생목록과 좋아요), D(문서와 발표)는 `00_진행계획.md` 1절에 있어요. 각 역할의 할 일 체크리스트는 2절에 있어요.
 
 ### 이미 정해진 것 (팀 합의 없이 바꾸지 마세요)
@@ -38,7 +39,9 @@
 - DB는 **MySQL 8.x**, API는 **Python Flask + pymysql**, 테스트는 **Postman**
 - 테이블은 `users`, `artist`, `song`, `song_artist`, `chart`, `chart_entry`, `play_queue`, `song_like`, `play_history` **9개**, VIEW는 `song_info` **1개**
   - **앨범 테이블은 일부러 뺐어요.** 커버, 발매일, 국내/해외는 `song`에 있어요.
-- 화면별 쿼리는 `sql/03_view_queries.sql`에 있어요. 입력값은 `@변수`(`@user_id`, `@region`, `@chart_id`, `@now`)로 받고, 곡 정보와 아티스트 이름은 VIEW `song_info`를 JOIN해서 가져와요.
+- API는 `04_API명세.md`의 **11개**예요(조회 5 + 쓰기 6). 11번 `POST /api/users/<id>/plays`가 재생 기록을 쌓아요. 에러는 `{"error": "이유"}` + 400/404/409로 돌려줘요.
+- "많이 들은" = **3회 이상** 들은 좋아요 곡, "잊고 지낸" = 30일 넘게 안 들었거나 한 번도 안 들은 좋아요 곡이에요.
+- 화면별 쿼리는 `sql/03_view_queries.sql`에 있어요. `api/app.py`에도 같은 쿼리가 `%s` 입력값 방식으로 들어 있어서, 쿼리를 바꾸면 **두 곳을 같이** 고쳐야 해요. 입력값은 `@변수`(`@user_id`, `@region`, `@chart_id`, `@now`)로 받고, 곡 정보와 아티스트 이름은 VIEW `song_info`를 JOIN해서 가져와요.
 - 멜론차트는 **1시간 단위**로 저장해요. 순위 변동(▲▼NEW)은 저장하지 않고, 직전 시각 기록과 셀프 조인해서 계산해요.
 - "재생목록"은 지금 듣는 곡 대기열이에요. 사용자가 이름을 붙여 만드는 "플레이리스트"가 아니에요. 좋아요는 **곡 탭만** 다뤄요.
 - 로그인은 구현하지 않고, URL의 `user_id`로 사용자를 구분해요.
@@ -47,10 +50,11 @@
 ### 이렇게 도와주세요
 1. **한국어로**, 수업에서 배운 수준(SELECT, JOIN, GROUP BY, 서브쿼리, VIEW, 정규화 1NF~3NF)에 맞춰 쉽게 설명해 주세요. 새 문법을 쓸 때는 무엇인지 한 줄 설명을 붙여 주세요.
 2. 위의 "정해진 것"을 바꿔야 할 것 같으면, 바로 바꾸지 말고 **"팀에 제안할 내용"**으로 이유와 함께 따로 정리해 주세요. 팀 합의 뒤 관리자가 `03_결정사항.md`에 기록해요.
-3. 파일을 고치면 **고친 파일 전체 내용**을 보여 주고, 마지막에 "어떤 파일의 어디를 왜 고쳤는지" 한 줄 요약을 써 주세요. 팀원은 이 요약과 파일을 카톡으로 관리자에게 보내요(`00_진행계획.md` 6절 파일 공유 규칙).
-4. 스키마가 바뀌면 `01_schema.sql`, `02_sample_data.sql`, `03_view_queries.sql`, `02_DB설계.md`가 서로 맞는지 같이 확인해 주세요.
-5. 모르는 것(팀이 아직 안 정한 것, 수업 범위 등)은 추측하지 말고 사용자에게 물어봐 주세요. 아직 안 정해진 것은 `03_결정사항.md`의 "결정할 것" 표에 있어요.
-6. 샘플 데이터의 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트, `Sample Song`/`Sample Artist`는 **테스트용 임의 값**이에요. 실제 멜론 데이터처럼 설명하지 마세요.
+3. 파일을 고치면 **고친 파일 전체 내용**을 보여 주고, 마지막에 "어떤 파일의 어디를 왜 고쳤는지" 한 줄 요약을 써 주세요. 팀원은 이 요약과 파일을 카톡으로 관리자에게 보내요(`00_진행계획.md` 6절 파일 공유 규칙). ZIP 이름은 `melon_code_v번호.0.zip`이에요.
+4. 스키마나 쿼리가 바뀌면 `01_schema.sql`, `02_sample_data.sql`, `03_view_queries.sql`, `api/app.py`, `02_DB설계.md`, `05_실행가이드.md`의 기대 결과가 서로 맞는지 같이 확인해 주세요. 보고서와 PPT에도 반영할 곳이 있는지 알려 주세요.
+5. DB 비밀번호가 들어 있는 `api/config.py`는 절대 공유하지 않아요. 예시는 `config.example.py`예요.
+6. 모르는 것(팀이 아직 안 정한 것, 수업 범위 등)은 추측하지 말고 사용자에게 물어봐 주세요. 아직 안 정해진 것은 `03_결정사항.md`의 "결정할 것" 표에 있어요.
+7. 샘플 데이터의 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트, 차트 3~10위, 12번 곡 제목("언제나 사랑해", 스크린샷에서 잘린 것을 추정)은 **테스트용 임의 값**이에요. 실제 멜론 데이터처럼 설명하지 마세요.
 
 ### 스크린샷 내용 (이미지를 볼 수 없는 AI용 설명)
 - **홈** (`images/view1_home.jpg`)
@@ -79,10 +83,12 @@
 | `docs/05_실행가이드.md` | SQL 실행 방법과 기대 결과 |
 | `변경내역.md` | ZIP 버전 기록 |
 | `sql/01_schema.sql` → `02_sample_data.sql` → `03_view_queries.sql` | 이 순서로 실행 |
+| `api/` | Flask API 11개: `app.py`, `db.py`, `config.example.py`, `requirements.txt`, `README.md`(실행 방법), `postman_collection.json` |
+| `report/보고서.docx`, `report/발표슬라이드.pptx` | 보고서와 발표 슬라이드 초안 (이 파일에는 미포함) |
 | `images/` | 앱 스크린샷 3장, ERD |
 | `참고자료/TP_DB_과제공지.pdf` | 교수님 과제 공지 원문 |
 
-아래부터는 위 파일들의 **원문을 그대로** 이어 붙였어요. 문서 안의 이미지와 링크는 이 파일에서는 열리지 않아요. 이미지는 `images/` 폴더를 보면 돼요.
+아래부터는 위 파일들의 **원문을 그대로** 이어 붙였어요(Postman 컬렉션, 보고서, PPT, 이미지는 제외). 문서 안의 이미지와 링크는 이 파일에서는 열리지 않아요. 이미지는 `images/` 폴더를 보면 돼요.
 
 
 ---
@@ -98,11 +104,13 @@
 > 1. 이 README (5분)
 > 2. [`docs/00_진행계획.md`](docs/00_진행계획.md): 진행 순서, 역할, 할 일, 카톡+ZIP 파일 공유 규칙(6절) (10분)
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
-> 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL 실행해 보기
+> 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL과 API 실행해 보기
+>
+> 지금 버전: **v3.0**. 무엇이 바뀌었는지는 [`변경내역.md`](변경내역.md)에 있어요.
 
 ### AI(Claude, ChatGPT, Gemini 등)와 같이 작업할 때
 
-[`AI용_전체자료.md`](AI용_전체자료.md) **파일 하나만 AI에 첨부**하면 돼요. 문서와 SQL이 전부 들어 있고, AI가 지켜야 할 규칙(정해진 것, 바꾸면 안 되는 것)도 맨 위에 적혀 있어요.
+[`AI용_전체자료.md`](AI용_전체자료.md) **파일 하나만 AI에 첨부**하면 돼요. 문서, SQL, API 코드가 전부 들어 있고, AI가 지켜야 할 규칙(정해진 것, 바꾸면 안 되는 것)도 맨 위에 적혀 있어요.
 - 맨 위 "팀원용: AI에게 이렇게 물어보세요"의 문장을 복사해서 쓰면 돼요.
 - 화면을 보여주고 싶으면 `images/`의 스크린샷도 같이 첨부해요. 과제 원문은 `참고자료/TP_DB_과제공지.pdf`에 있어요.
 - AI가 고쳐 준 파일은 "어떤 파일의 어디를 왜 고쳤는지" 한 줄과 함께 관리자에게 보내 주세요.
@@ -123,9 +131,9 @@
 |---|---|---|
 | 0 | 기초 작업 ✅ | 계획, 화면 분석, 기초 테이블, 샘플 데이터, 쿼리 |
 | 1 | 킥오프 | 역할 배정, 결정사항 확정, **단계별 날짜 정하기**, 각자 SQL 실행 확인 |
-| 2 | DB 확정 + API 개발 | 스키마 확정, ERD, Flask API |
+| 2 | DB 확정 + API 개발 🔶 | 스키마 확정, ERD, Flask API (**API 11개 구현 완료**) |
 | 3 | 테스트 + 명세 | Postman 테스트, API 명세 완성 |
-| 4 | 보고서 + 슬라이드 | 원고 취합, 최종 점검, 리허설 |
+| 4 | 보고서 + 슬라이드 🔶 | 원고 취합, 최종 점검, 리허설 (**초안 완성**) |
 | 5 | 제출 + 발표 | 슬라이드, 보고서 제출 → 10분 발표 + Q&A 5분 → 동료 평가 |
 
 > 과제 공식 마감(교수님 공지): 슬라이드와 보고서 제출 **11/29(일) 23:59**, 발표 12/1(화) 또는 12/7(월)
@@ -159,18 +167,20 @@
 | [`docs/00_진행계획.md`](docs/00_진행계획.md) | 진행 순서, 역할(A~D), 단계별 할 일, 발표와 보고서 구성안, 파일 공유 규칙 | ✅ |
 | [`docs/01_화면분석.md`](docs/01_화면분석.md) | 화면별 필요 데이터 | ✅ |
 | [`docs/02_DB설계.md`](docs/02_DB설계.md) | ERD, 테이블, 정규화 근거, Q&A 대비 | ✅ 초안 |
-| [`docs/03_결정사항.md`](docs/03_결정사항.md) | 결정할 것과 결정된 것 | 🔶 의견 필요 |
-| [`docs/04_API명세.md`](docs/04_API명세.md) | API 목록 (응답 예시는 구현하면서 채움) | 🔶 목록만 |
-| [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL 실행 방법과 기대 결과, md 여는 법 | ✅ |
+| [`docs/03_결정사항.md`](docs/03_결정사항.md) | 결정할 것과 결정된 것 | 🔶 일부 의견 필요 |
+| [`docs/04_API명세.md`](docs/04_API명세.md) | API 목록 11개, 시연 흐름 (JSON 예시는 보고서 4.2절) | ✅ |
+| [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL·API 실행 방법과 기대 결과, md 여는 법 | ✅ |
 | [`images/erd.png`](images/erd.png) | ERD 이미지 | ✅ 초안 |
 | [`변경내역.md`](변경내역.md) | ZIP 버전별 변경 기록 | ✅ |
-| [`AI용_전체자료.md`](AI용_전체자료.md) | AI에 첨부할 통합 파일 (문서 + SQL 전부, ZIP 만들 때 자동 생성) | ✅ |
+| [`AI용_전체자료.md`](AI용_전체자료.md) | AI에 첨부할 통합 파일 (문서 + SQL + API 코드, ZIP 만들 때 자동 생성) | ✅ |
 | `images/` | 앱 스크린샷 3장 (`view1_home.jpg`, `view2_play_queue.jpg`, `view3_like_songs.jpg`) | ✅ |
 | [`참고자료/TP_DB_과제공지.pdf`](참고자료/TP_DB_과제공지.pdf) | 교수님 과제 공지 원문 | ✅ |
 | [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE 9개 + CREATE VIEW 1개 | ✅ 실행 확인 |
-| [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 스크린샷 기반 샘플 데이터 | ✅ 실행 확인 |
-| [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT | ✅ 실행 확인 |
-| `api/` | Flask API | ⬜ Phase 2 |
+| [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 샘플 데이터 (사용자 3, 곡 15, 차트 10위까지) | ✅ 실행 확인 |
+| [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT 8개 | ✅ 실행 확인 |
+| [`api/`](api/README.md) | Flask API 11개 (`app.py`, `db.py`, `config.example.py`, `requirements.txt`, `postman_collection.json`, 실행 방법 `README.md`) | ✅ 실행 확인 |
+| `report/보고서.docx` | 보고서 초안 (이름·역할 칸 비어 있음) | 🔶 초안 |
+| `report/발표슬라이드.pptx` | 발표 슬라이드 초안 16장 (발표자 칸 비어 있음, 14번 Postman 캡처 교체 필요) | 🔶 초안 |
 
 
 ---
@@ -196,6 +206,8 @@
 | 3 | 테스트 + 명세 | Postman 테스트, API 명세 완성, 버그 수정 | |
 | 4 | 보고서 + 슬라이드 | 원고 넘기기 → 합치기 → 최종 점검과 리허설 (전원) | |
 | 5 | 제출 + 발표 | 제출(마감 직전은 피하기), 10분 발표 + Q&A 5분 | 제출 11/29 23:59 (공식) |
+
+> **현재 상태 (v3.0)**: 2단계 대부분 완료. API 11개 구현, 보고서와 발표 슬라이드 초안 완성. 남은 것은 아래 체크리스트의 빈칸이에요.
 
 각 단계는 **앞 단계가 끝나야 시작**하는 게 원칙이에요. 단, 2단계에서 D(문서)는 1장(앱/화면 소개)을 먼저 써도 돼요.
 
@@ -227,31 +239,34 @@
 #### Phase 2. DB 확정 + API 개발
 **A (DB)**
 - [ ] 킥오프 피드백을 스키마에 반영
-- [ ] 샘플 데이터 확장: 차트를 최소 10위까지, 해외곡 2~3개, 사용자 2~3명
+- [x] 샘플 데이터 확장: 차트 10위까지, 해외곡 3개, 사용자 3명 (v2.0)
 - [ ] ERD를 도구로 다시 그려서 `images/erd.png` 교체. 초안 이미지는 이미 있고, MySQL Workbench의 Reverse Engineer를 쓰면 SQL에서 자동으로 그려져요
-- [ ] `docs/02_DB설계.md`의 정규화 예시(재생목록 표 → 1NF → 2NF → 3NF)를 슬라이드용 표로 옮기기
+- [x] `docs/02_DB설계.md`의 정규화 예시(재생목록 표 → 1NF → 2NF → 3NF)를 슬라이드용 표로 옮기기 (PPT 9번)
 
 **B (API 홈)**
-- [ ] `api/` 폴더에 Flask 뼈대 만들기: `app.py`, `db.py`(pymysql 연결), `requirements.txt`, `config.example.py`
-- [ ] `GET /api/home/new-songs`, `GET /api/home/chart`, `GET /api/users/<id>/now-playing`
-- [ ] 실행 방법을 `api/README.md`에 적기
+- [x] `api/` 폴더에 Flask 뼈대 만들기: `app.py`, `db.py`(pymysql 연결), `requirements.txt`, `config.example.py`
+- [x] `GET /api/home/new-songs`, `GET /api/home/chart`, `GET /api/users/<id>/now-playing`
+- [x] 실행 방법을 `api/README.md`에 적기
 
 **C (API 재생목록, 좋아요)**
-- [ ] `GET /api/users/<id>/queue`
-- [ ] `GET /api/users/<id>/likes/songs?filter=all|most|forgotten`
-- [ ] 쓰기 API: 좋아요 추가/취소, 재생목록에 곡 추가 (선택: 삭제, 현재 곡 변경)
+- [x] `GET /api/users/<id>/queue`
+- [x] `GET /api/users/<id>/likes/songs?filter=all|most|forgotten`
+- [x] 쓰기 API: 좋아요 추가/취소, 재생목록에 곡 추가, 삭제, 현재 곡 변경
+- [x] 재생 기록 API `POST /api/users/<id>/plays` (11번, v3.0)
 
 **D (문서)**
-- [ ] 보고서 목차 확정 (아래 4절), 1장 "앱과 화면 소개" 작성
-- [ ] 슬라이드 템플릿과 디자인 정하기
+- [x] 보고서 초안 전체 작성 → `report/보고서.docx`
+- [x] 발표 슬라이드 초안 16장 → `report/발표슬라이드.pptx`
 
 #### Phase 3. 테스트 + 명세
-- [ ] B, C: Postman Collection을 export해서 관리자에게 전달 (`api/postman_collection.json`)
-- [ ] B, C: 모든 API의 **요청과 JSON 응답을 캡처**해서 `docs/04_API명세.md` 채우기
-- [ ] A: 쓰기 API 실행 후 DB가 실제로 바뀌는지 확인 (좋아요 → song_like 행 추가)
+- [x] B, C: Postman Collection → `api/postman_collection.json` (11번 요청은 v3.0에서 추가)
+- [x] API별 입력값과 JSON 응답 → 보고서 4.2절
+- [ ] PPT 14번의 JSON 예시를 **실제 Postman 화면 캡처**로 교체
+- [ ] A: 쓰기 API 실행 후 DB가 실제로 바뀌는지 **MySQL 8에서** 확인 (좋아요 → song_like 행 추가, 재생 기록 → play_history 행 추가)
 - [ ] 전원: 다른 사람 PC에서도 API가 실행되는지 교차 확인
 
 #### Phase 4. 보고서 + 슬라이드
+- [ ] 표지, 역할 분담, 발표자 이름 칸 채우기 (보고서 표지·5.3절, PPT 1·2·16번)
 - [ ] 각 역할이 자기 파트 원고를 D에게 넘기기
 - [ ] D: 보고서와 슬라이드 합치기
 - [ ] 전원: 최종 검토 + 발표 리허설 (10분 맞추기)
@@ -300,7 +315,7 @@
 GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않게** 아래 규칙을 지켜요.
 
 1. **관리자 1명**(기초 작업자)이 전체 폴더를 가지고 있고, 팀 카톡에 ZIP을 올려요.
-2. ZIP 이름은 `멜론_텀프로젝트_v날짜_번호.zip` (예: `v1115_1`, `v1118_2`). **항상 가장 최신 ZIP 하나만 기준**이에요.
+2. ZIP 이름은 `melon_code_v번호.0.zip` (예: `melon_code_v3.0.zip` → 다음은 `v4.0`). **항상 번호가 가장 큰 ZIP 하나만 기준**이에요.
 3. 팀원이 파일을 고쳤으면 **고친 파일만** 카톡으로 관리자에게 보내요. 보낼 때 "어떤 파일의 어디를 왜 고쳤는지" 한 줄을 같이 적어 주세요.
    - 예: `sql/02_sample_data.sql - 차트 10위까지 추가함`
 4. 관리자는 받은 파일을 합치고 [`../변경내역.md`](../변경내역.md)에 기록한 뒤 새 ZIP을 올려요. ZIP을 만들 때 `AI용_전체자료.md`도 최신 내용으로 다시 만들어요(직접 고치지 않기).
@@ -311,8 +326,8 @@ GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않�
 |---|---|
 | A. DB | `sql/*.sql`, `docs/02_DB설계.md`, `images/erd.png` |
 | B. API 홈 | `api/app.py`, `api/db.py`, `api/README.md`, `docs/04_API명세.md`의 홈 부분 |
-| C. API 재생목록, 좋아요 | `api/` 안의 재생목록, 좋아요 코드, `docs/04_API명세.md`의 해당 부분 |
-| D. 문서 | 보고서, 슬라이드 파일 (`report/` 폴더 새로 만들기) |
+| C. API 재생목록, 좋아요 | `api/` 안의 재생목록, 좋아요, 재생 기록 코드, `docs/04_API명세.md`의 해당 부분 |
+| D. 문서 | `report/보고서.docx`, `report/발표슬라이드.pptx` |
 | 관리자 | `README.md`, `docs/00_진행계획.md`, `docs/03_결정사항.md`, `변경내역.md` |
 
 
@@ -442,6 +457,7 @@ GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않�
 | 재생 기록은 왜 따로 history_id? | 같은 곡을 여러 번 들으니 (user_id, song_id)가 중복돼요. 그래서 행마다 고유 번호를 줘요 |
 | 차트에 왜 시각(chart_time)이 PK에 있나? | 차트가 매시 갱신되고, 순위 변동을 계산하려면 이전 시각 기록이 필요해서 |
 | 앨범 테이블은 왜 없나? | 고른 화면 3개는 모두 **곡 단위**로 보여줘요(앨범 화면이 없음). 커버, 발매일, 국내/해외를 `song`에 두면 모두 song_id에만 종속돼서 3NF를 만족해요 |
+| 재생 기록은 어떻게 쌓이나? | `POST /api/users/<id>/plays` API가 `play_history`에 INSERT 한 줄을 해요. history_id(AUTO_INCREMENT)와 played_at(DEFAULT CURRENT_TIMESTAMP)이 처음부터 있어서 **테이블을 고치지 않고** API만 추가했어요 |
 | 그럼 한계는? | 같은 앨범의 곡이 여러 개면 커버와 발매일이 곡마다 반복 저장돼요. 앨범 화면을 추가한다면 `album` 테이블을 분리하는 게 개선 방향이에요 |
 
 ### 정규화 근거 (발표, 보고서용)
@@ -486,7 +502,7 @@ PK = (user_id, position)
 | 재생목록 "2곡" | `COUNT(*)` from play_queue |
 | 아티스트 "A20, A20 LITE" | **VIEW `song_info`** 안에서 `GROUP_CONCAT(artist_name ORDER BY artist_order)`로 합침. 화면별 쿼리는 모두 이 VIEW를 JOIN |
 | 차트 순위 변동 | 같은 차트의 **직전 chart_time**과 LEFT JOIN → `이전 순위 - 현재 순위` (없으면 NEW) |
-| 많이 들은 | play_history `COUNT(*)` 내림차순 |
+| 많이 들은 | play_history `COUNT(*)`가 **3회 이상**인 좋아요 곡, 많이 들은 순 (`HAVING`) |
 | 잊고 지낸 | play_history `MAX(played_at)`이 30일 이전이거나 재생 기록이 없는 좋아요 곡 |
 
 순위 변동이나 재생 횟수를 컬럼으로 저장하면, 원본이 바뀔 때마다 같이 고쳐야 해요(**갱신 이상**). 그래서 계산 방식을 택했어요.
@@ -509,7 +525,6 @@ PK = (user_id, position)
 | 6 | ERD 도구 | MySQL Workbench / draw.io / ERDCloud | **Workbench**: SQL에서 자동으로 그려져서 스키마와 어긋나지 않음 | |
 | 7 | "잊고 지낸" 기준 | 30일 / 60일 / 90일 이상 안 들음 | 30일 (지금 쿼리 기준). 바꾸면 `03_view_queries.sql` 한 줄만 수정 | |
 | 9 | 발표자 | 1명이 전부 / 파트별 나눠서 | 파트별 (Q&A 대응이 쉬움) | |
-| 10 | 쓰기 API 범위 | 좋아요 추가/취소 + 재생목록 추가 / 더 많이 | 필수 3개 + 선택 2개 ([`04_API명세.md`](04_API명세.md)) | |
 | 12 | 단계별 날짜 | [`00_진행계획.md`](00_진행계획.md) 0절 표 | 제출일(11/29) 전에 "원고 넘기기", "최종 점검" 날짜를 따로 잡기 | |
 
 ### 결정된 것
@@ -533,6 +548,11 @@ PK = (user_id, position)
 | 11/16 | | 쿼리의 입력값은 `@변수`로 유지 (값 바꿀 때 SET 한 줄만 수정) |
 | 11/16 | | VIEW `song_info` 추가: 아티스트 이름 합치기를 VIEW 하나로, 화면별 쿼리 단순화 |
 | 11/16 | | 멜론차트는 **1시간 단위** + 순위 변동(▲▼NEW) 유지 (스크린샷 "오늘 23:00 기준"과 맞춤) |
+| 11/17 | 13 | "많이 들은" = **3회 이상** 들은 좋아요 곡 (`HAVING play_count >= 3`) |
+| 11/17 | | 샘플 데이터 확장: 사용자 3명, 곡 15개(해외곡 3), 차트 10위까지 (v2.0) |
+| 11/18 | 10 | 쓰기 API 6개: 재생목록 추가·삭제·현재 곡 변경, 좋아요 추가·취소, **재생 기록 추가(11번)** |
+| 11/18 | | 재생 기록 API `POST /api/users/<id>/plays` 추가. **테이블 변경 없음** (play_history 그대로 사용) |
+| 11/18 | | ZIP 이름 규칙 = `melon_code_v번호.0.zip` (v1 → v2.0 → v3.0 → …) |
 
 
 ---
@@ -541,7 +561,8 @@ PK = (user_id, position)
 
 ## 04. API 명세 (초안)
 
-> 상태: **API 목록 초안**. 응답 형식과 JSON 예시는 Phase 2~3에서 B, C가 구현하면서 Postman 캡처로 채워요.
+> 상태: **11개 모두 구현 완료** → [`../api/app.py`](../api/app.py). 실행 방법은 [`../api/README.md`](../api/README.md), Postman 요청 모음은 [`../api/postman_collection.json`](../api/postman_collection.json).
+> API별 입력값과 실제 JSON 응답은 **보고서 4.2절**(`report/보고서.docx`)에 있어요.
 > 쿼리는 [`../sql/03_view_queries.sql`](../sql/03_view_queries.sql)에 이미 있어요. API는 쿼리의 `@변수` 자리(`@user_id`, `@region`, `@chart_id`)에 입력값을 넣어 실행하고, 결과를 JSON으로 바꿔 주면 돼요.
 
 - 서버: Python **Flask** + **pymysql**
@@ -550,20 +571,24 @@ PK = (user_id, position)
 
 ### API 목록
 
-| # | 화면 | Method | URL | 설명 | 담당 | 필수 |
+| # | 화면 | Method | URL | 설명 | 담당 | 구현 |
 |---|---|---|---|---|---|---|
 | 1 | 홈 | GET | `/api/home/new-songs?region=&limit=` | 최신음악 (region: 생략=전체, `국내`, `해외`) | B | ✅ |
 | 2 | 홈 | GET | `/api/home/chart?chart_id=&limit=` | 멜론차트 최신 기준 시각 + 순위 변동 | B | ✅ |
 | 3 | 홈, 재생목록 | GET | `/api/users/<user_id>/now-playing` | 미니플레이어 (현재 재생 곡) | B | ✅ |
 | 4 | 재생목록 | GET | `/api/users/<user_id>/queue` | 곡 수 + 곡 리스트 (내설정순) | C | ✅ |
 | 5 | 재생목록 | POST | `/api/users/<user_id>/queue` | 곡을 재생목록 맨 뒤에 추가 `{"song_id": 4}` | C | ✅ |
-| 6 | 재생목록 | PATCH | `/api/users/<user_id>/queue/current` | 현재 재생 곡 바꾸기 `{"position": 1}` | C | 선택 |
-| 7 | 재생목록 | DELETE | `/api/users/<user_id>/queue/<position>` | 재생목록에서 곡 빼기 | C | 선택 |
+| 6 | 재생목록 | PATCH | `/api/users/<user_id>/queue/current` | 현재 재생 곡 바꾸기 `{"position": 1}` | C | ✅ |
+| 7 | 재생목록 | DELETE | `/api/users/<user_id>/queue/<position>` | 재생목록에서 곡 빼기 | C | ✅ |
 | 8 | 좋아요 | GET | `/api/users/<user_id>/likes/songs?filter=` | filter: `all`(최신순), `most`(많이 들은), `forgotten`(잊고 지낸) | C | ✅ |
 | 9 | 좋아요 | POST | `/api/users/<user_id>/likes/songs` | 좋아요 `{"song_id": 3}` | C | ✅ |
 | 10 | 좋아요 | DELETE | `/api/users/<user_id>/likes/songs/<song_id>` | 좋아요 취소 | C | ✅ |
+| 11 | 재생목록·좋아요 | POST | `/api/users/<user_id>/plays` | 재생 기록 추가 `{"song_id": 2}`. 곡을 한 번 들을 때마다 play_history 1행 → "많이 들은", "잊고 지낸"의 원본 | C | ✅ |
 
-> 조회(GET)만 있으면 "DB를 읽기만 하는" 발표가 되기 때문에, 좋아요 추가/취소와 재생목록 추가처럼 **DB를 바꾸는 API**를 최소 2~3개 넣는 걸 추천해요.
+- 조회 5개 + 쓰기 6개. 에러는 `{"error": "이유"}`와 상태 코드(400 잘못된 입력, 404 없음, 409 중복)로 돌려줘요.
+- 테스트용으로 `?now=2026-11-15 23:30:00`을 붙이면 차트와 "잊고 지낸"의 기준 시각을 샘플 데이터에 맞춰 고정할 수 있어요.
+
+**발표 시연 추천 흐름 (11번)**: `8. 많이 들은` 조회(With 1곡) → `11. 재생 기록 추가` `{"song_id": 2}` 3번 → `8. 많이 들은` 다시 조회(With, LOVE ATTACK 2곡). 기록이 쌓이면 화면이 바뀌는 걸 보여줄 수 있어요.
 
 
 ---
@@ -584,7 +609,7 @@ PK = (user_id, position)
 | Postman | API 테스트 | Phase 3부터 사용 |
 
 ### 2. 파일 받기
-1. 팀 카톡방에 올라온 **가장 최신 ZIP**(`멜론_텀프로젝트_v날짜_번호.zip`)을 받아서 압축을 풀어요.
+1. 팀 카톡방에 올라온 **가장 최신 ZIP**(`melon_code_v번호.0.zip`, 예: `melon_code_v3.0.zip`)을 받아서 압축을 풀어요.
 2. `term_project_melon/sql/` 폴더에 SQL 파일 3개가 있어요.
 
 #### .md 문서를 보기 좋게 여는 법
@@ -601,15 +626,16 @@ PK = (user_id, position)
 4. `sql/03_view_queries.sql` 열기 → ⚡ → 아래쪽 Result 탭에서 결과 확인
    - 맨 위 `SET @user_id = 1;` 같은 `@변수` 값을 바꾸면 다른 조건으로 테스트할 수 있어요 (예: `@region = '해외'`, `@chart_id = 2`)
 
-> 터미널을 쓴다면: `mysql -u root -p < 01_schema.sql` 같은 식으로 01 → 02 → 03 순서로 실행
+> 터미널을 쓴다면: `mysql -u root -p --default-character-set=utf8mb4 < 01_schema.sql` 같은 식으로 01 → 02 → 03 순서로 실행. **`--default-character-set=utf8mb4`를 빼면 한글이 깨져서 저장될 수 있어요.**
 
 ### 4. 이렇게 나오면 성공
 
 **① 홈 - 최신음악 (전체)**: 8곡, 발매일 최신순
 ```
 사랑하면 / KCM → RAPLIFE / JJK → 선물 / 이예지 → 강강술래 / KARDI (카디) → Love S.O.S / 임영민
-→ 영화 '신의 악단' Special Track. 3 / 예잔 (가비엔제이) → OLVISMYPRODUCER / 키츠요지 (kitsyoji) → Sample Song (해외)
+→ 영화 '신의 악단' Special Track. 3 / 예잔 (가비엔제이) → OLVISMYPRODUCER / 키츠요지 (kitsyoji) → 언제나 사랑해 / 류민희
 ```
+`@region = '해외'`로 바꾸면: Die With A Smile / Lady Gaga, Bruno Mars → Espresso / Sabrina Carpenter → Blinding Lights / The Weeknd
 
 **① 홈 - 멜론차트 (TOP100, 23:00 기준)**
 | rank_no | rank_change | 곡 | 의미 |
@@ -618,17 +644,29 @@ PK = (user_id, position)
 | 2 | 0 | With / RESCENE (리센느) | `-` |
 | 3 | 1 | NEON / A20, A20 LITE | ▲1 |
 | 4 | -1 | RAPLIFE / JJK | ▼1 |
-| 5 | NULL | 사랑하면 / KCM | NEW |
+| 5 | 2 | 사랑하면 / KCM | ▲2 |
+| 6 | 0 | Die With A Smile / Lady Gaga, Bruno Mars | `-` |
+| 7 | -2 | 선물 / 이예지 | ▼2 |
+| 8 | 1 | Espresso / Sabrina Carpenter | ▲1 |
+| 9 | NULL | 언제나 사랑해 / 류민희 | NEW |
+| 10 | -2 | 강강술래 / KARDI (카디) | ▼2 |
 
 **미니플레이어**: NEON / A20, A20 LITE (position 2)
 
 **② 재생목록**: 곡 수 2, 리스트 `1. With (is_current 0)`, `2. NEON (is_current 1)`
 
 **③ 좋아요 - 전체 (최신순)**: With → LOVE ATTACK
-**③ 좋아요 - 많이 들은**: With 5회 → LOVE ATTACK 1회
+**③ 좋아요 - 많이 들은 (3회 이상)**: With 5회 (LOVE ATTACK은 1회라 안 나와요)
 **③ 좋아요 - 잊고 지낸**: LOVE ATTACK (마지막 재생 2025-03-10)
 
-### 5. 자주 나는 에러
+### 5. API 실행 (선택)
+
+`api/README.md`대로 실행하면 돼요. 요약하면 다음과 같아요.
+1. `api/config.example.py`를 복사해서 `api/config.py`를 만들고 MySQL 비밀번호를 적어요.
+2. `cd api` → `pip install -r requirements.txt` → `python app.py` (주소: `http://localhost:5000`)
+3. Postman에서 `api/postman_collection.json`을 Import하면 요청 11개가 화면별 폴더로 들어와요.
+
+### 6. 자주 나는 에러
 
 | 에러 | 원인과 해결 |
 |---|---|
@@ -644,13 +682,58 @@ PK = (user_id, position)
 
 ## 변경내역
 
-ZIP을 새로 올릴 때마다 맨 위에 한 줄씩 추가해요. **카톡방에서 항상 가장 위 버전의 ZIP을 기준으로 작업해 주세요.**
+ZIP을 새로 올릴 때마다 맨 위에 한 줄씩 추가해요. **카톡방에서 항상 번호가 가장 큰 ZIP을 기준으로 작업해 주세요.**
+ZIP 이름 규칙: `melon_code_v번호.0.zip`
 
-| 버전 (ZIP 이름) | 날짜 | 누가 | 바뀐 내용 |
+| 버전 | 날짜 | 누가 | 바뀐 내용 |
 |---|---|---|---|
-| `멜론_텀프로젝트_v1116_1.zip` | 11/16 | 관리자 | **앨범 테이블 제외(테이블 9개)**, VIEW `song_info` 추가로 화면별 쿼리 단순화, `CREATE DATABASE` 단순화, 겹치는 문서 섹션 정리, 문서 전체 점검, **AI용_전체자료.md 추가**(AI에 이 파일 하나만 첨부), 과제 공지 PDF 추가(`참고자료/`), ERD 다시 그림 |
-| `멜론_텀프로젝트_v1115_2.zip` | 11/15 | 관리자 | 진행계획에서 단계별 날짜를 빼고 순서만 남김(날짜는 킥오프에서 정하기), 결정사항 #12 추가 |
-| `멜론_텀프로젝트_v1115_1.zip` | 11/15 | 관리자 | 첫 공유: 진행계획, 화면 분석, DB 설계 + ERD, 결정사항, API 명세 초안, 실행가이드, SQL 3개(스키마, 샘플 데이터, 화면별 쿼리) |
+| `melon_code_v3.0.zip` | 11/18 | 관리자 | **v2.0(팀원 작업)을 전체 폴더에 합침**: `api/` 추가, `sql/02·03` 교체, `report/`(보고서·PPT) 추가. **재생 기록 API 11번 `POST /api/users/<id>/plays` 추가**(테이블 변경 없음). 보고서·PPT의 API 목록과 개수를 10개에서 11개로 수정. 결정사항 #10·#13·이름 규칙 기록. 실행가이드 기대 결과를 새 샘플 데이터에 맞춤. AI용_전체자료에 API 코드 포함 |
+| `melon_code_v2.0.zip` | 11/17 | 팀원 | Flask API 10개 + Postman 컬렉션, 샘플 데이터 확장(사용자 3, 곡 15, 차트 10위), "많이 들은 = 3회 이상", 보고서·발표 슬라이드 초안 |
+| v1 | 11/16 | 관리자 | 첫 공유: 진행계획, 화면 분석, DB 설계 + ERD, 결정사항, API 목록, 실행가이드, SQL 3개(테이블 9개 + VIEW 1개), 스크린샷, 과제 공지 PDF, AI용_전체자료 |
+
+
+---
+
+# 📄 파일: `api/README.md`
+
+## api/ : Flask API 실행 방법
+
+### 1. 준비
+```bash
+cd api
+python -m venv .venv
+.venv\Scripts\activate          # Windows   (mac: source .venv/bin/activate)
+pip install -r requirements.txt
+copy config.example.py config.py   # mac: cp config.example.py config.py
+```
+`config.py` 를 열어 `DB_PASSWORD` 에 자기 PC 의 MySQL root 비밀번호를 적어요.
+(`config.py` 는 카톡·ZIP 으로 올리지 않아요.)
+
+### 2. DB 준비
+MySQL Workbench 에서 `sql/01_schema.sql` → `sql/02_sample_data.sql` 순서로 실행 (docs/05_실행가이드.md)
+
+### 3. 서버 실행
+```bash
+python app.py
+```
+→ `http://localhost:5000` 에서 대기. 브라우저에서 `http://localhost:5000/api/home/chart` 를 열면 JSON 이 보여요.
+
+### 4. Postman 테스트
+`postman_collection.json` 을 Postman 에서 **Import** 하면 API 11개가 폴더별로 들어와요.
+응답 예시는 `docs/04_API명세.md` 에 있어요.
+
+### 5. 파일 설명
+| 파일 | 내용 |
+|---|---|
+| `app.py` | API 11개 (라우트 + SQL). `sql/03_view_queries.sql` 의 쿼리를 그대로 사용 |
+| `db.py` | pymysql 연결, `fetch_all / fetch_one / transaction()` |
+| `config.example.py` | DB 접속 설정 틀. 복사해서 `config.py` 로 |
+| `requirements.txt` | flask, pymysql |
+| `postman_collection.json` | Postman 요청 모음 |
+
+### 6. 테스트용 `now` 파라미터
+멜론차트와 "잊고 지낸" 은 "지금 시각" 을 기준으로 계산해요. 샘플 데이터(2026-11-15) 기준으로 결과를 고정해서 보고 싶으면
+`?now=2026-11-15 23:30:00` 을 붙이면 돼요. 생략하면 MySQL 의 `NOW()` 를 써요.
 
 
 ---
@@ -816,23 +899,25 @@ GROUP BY s.song_id, s.song_title, s.cover_url, s.release_date, s.region, s.durat
 
 ```sql
 -- =====================================================================
--- 샘플 데이터
---   곡명, 아티스트명, 차트 순위, 재생목록, 좋아요 목록은 스크린샷(2026-11-15 23시경)에서 가져옴
---   ※ 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트는 테스트용 "임의 값"
---   ※ 'Sample Song' / 'Sample Artist' 는 해외 탭 테스트용 가짜 데이터
+-- 샘플 데이터 (v2.0 확장판)
+--   곡명, 아티스트명, 차트 1~2위, 재생목록, 좋아요 목록은 스크린샷(2026-11-15 23시경)에서 가져옴
+--   ※ 발매일, 재생시간, 커버 URL, 재생 기록, 22:00 차트, 3~10위는 테스트용 "임의 값"
+--   ※ 해외곡 3곡(Die With A Smile, Espresso, Blinding Lights)은 해외 탭 테스트용
+--   ※ 12번 곡 제목은 스크린샷에서 "언제나 사…"까지만 보여서 추정한 값
 --   실행 순서: 01_schema.sql → 02_sample_data.sql
 -- =====================================================================
 USE melon;
 
 -- ---------------------------------------------------------------------
--- users
+-- users (3명)
 -- ---------------------------------------------------------------------
 INSERT INTO users (user_id, nickname, created_at) VALUES
-(1, '멜론유저', '2025-03-01 10:00:00'),   -- 스크린샷 주인 (메인 테스트 계정)
-(2, '테스트유저', '2025-06-01 10:00:00');  -- 사용자별로 결과가 갈리는지 확인용
+(1, '멜론유저',   '2025-03-01 10:00:00'),   -- 스크린샷 주인 (메인 테스트 계정)
+(2, '테스트유저', '2025-06-01 10:00:00'),   -- 사용자별로 결과가 갈리는지 확인용
+(3, '팝덕후',     '2026-01-15 09:30:00');   -- 해외곡 위주 사용자
 
 -- ---------------------------------------------------------------------
--- artist
+-- artist (16명)
 -- ---------------------------------------------------------------------
 INSERT INTO artist (artist_id, artist_name) VALUES
 (1,  'RESCENE (리센느)'),
@@ -846,10 +931,14 @@ INSERT INTO artist (artist_id, artist_name) VALUES
 (9,  '예잔 (가비엔제이)'),
 (10, '키츠요지 (kitsyoji)'),
 (11, '머무르'),
-(12, 'Sample Artist');
+(12, '류민희'),
+(13, 'Lady Gaga'),
+(14, 'Bruno Mars'),
+(15, 'Sabrina Carpenter'),
+(16, 'The Weeknd');
 
 -- ---------------------------------------------------------------------
--- song  (커버 URL, 발매일, 재생시간은 임의 값)
+-- song (15곡: 국내 12 + 해외 3)
 --   최신음악 화면의 왼쪽→오른쪽 순서가 나오도록 발매일을 최신순으로 배치
 -- ---------------------------------------------------------------------
 INSERT INTO song (song_id, song_title, cover_url, release_date, region, duration_sec) VALUES
@@ -864,10 +953,13 @@ INSERT INTO song (song_id, song_title, cover_url, release_date, region, duration
 (9,  '영화 ''신의 악단'' Special Track. 3',  'https://example.com/cover/9.jpg',  '2026-11-09', '국내', 233),
 (10, 'OLVISMYPRODUCER',                       'https://example.com/cover/10.jpg', '2026-11-08', '국내', 158),
 (11, '꿈꾸던 어른이 되었나요?',               'https://example.com/cover/11.jpg', '2026-08-15', '국내', 215),
-(12, 'Sample Song',                           'https://example.com/cover/12.jpg', '2026-11-07', '해외', 190);
+(12, '언제나 사랑해',                         'https://example.com/cover/12.jpg', '2026-11-07', '국내', 204),
+(13, 'Die With A Smile',                      'https://example.com/cover/13.jpg', '2026-11-06', '해외', 251),
+(14, 'Espresso',                              'https://example.com/cover/14.jpg', '2026-11-05', '해외', 175),
+(15, 'Blinding Lights',                       'https://example.com/cover/15.jpg', '2026-11-04', '해외', 200);
 
 -- ---------------------------------------------------------------------
--- song_artist  (NEON 은 아티스트 2명 → 1NF 예시)
+-- song_artist  (아티스트 2명인 곡: NEON, Die With A Smile → 1NF 예시)
 -- ---------------------------------------------------------------------
 INSERT INTO song_artist (song_id, artist_id, artist_order) VALUES
 (1, 1, 1),
@@ -881,7 +973,10 @@ INSERT INTO song_artist (song_id, artist_id, artist_order) VALUES
 (9, 9, 1),
 (10, 10, 1),
 (11, 11, 1),
-(12, 12, 1);
+(12, 12, 1),
+(13, 13, 1), (13, 14, 2),
+(14, 15, 1),
+(15, 16, 1);
 
 -- ---------------------------------------------------------------------
 -- chart
@@ -893,63 +988,102 @@ INSERT INTO chart (chart_id, chart_name) VALUES
 
 -- ---------------------------------------------------------------------
 -- chart_entry
---   23:00 의 1, 2위는 스크린샷 그대로, 나머지와 22:00 은 순위 변동 테스트용 임의 값
---   기대 결과(TOP100 23:00): 1위 꿈꾸던.. '-', 2위 With '-', 3위 NEON ▲1,
---                           4위 RAPLIFE ▼1, 5위 사랑하면 NEW
+--   23:00 의 TOP100 1, 2위는 스크린샷 그대로, 나머지와 22:00 은 순위 변동 테스트용 임의 값
+--   기대 결과(TOP100 23:00, 10위까지):
+--     1 꿈꾸던.. '-'   2 With '-'      3 NEON ▲1        4 RAPLIFE ▼1   5 사랑하면 ▲2
+--     6 Die With A Smile '-'  7 선물 ▼2  8 Espresso ▲1  9 언제나 사랑해 NEW  10 강강술래 ▼2
+--   기대 결과(HOT100 23:00): 1위 사랑하면 ▲1, 2위 RAPLIFE ▼1, 3위 선물 NEW
+--   기대 결과(비오고 흐린 날 23:00): 1위 선물 ▲1, 2위 꿈꾸던.. ▼1
 -- ---------------------------------------------------------------------
 INSERT INTO chart_entry (chart_id, chart_time, rank_no, song_id) VALUES
 -- TOP100 22:00
-(1, '2026-11-15 22:00:00', 1, 11),
-(1, '2026-11-15 22:00:00', 2, 1),
-(1, '2026-11-15 22:00:00', 3, 5),
-(1, '2026-11-15 22:00:00', 4, 3),
-(1, '2026-11-15 22:00:00', 5, 6),
+(1, '2026-11-15 22:00:00', 1,  11),
+(1, '2026-11-15 22:00:00', 2,  1),
+(1, '2026-11-15 22:00:00', 3,  5),
+(1, '2026-11-15 22:00:00', 4,  3),
+(1, '2026-11-15 22:00:00', 5,  6),
+(1, '2026-11-15 22:00:00', 6,  13),
+(1, '2026-11-15 22:00:00', 7,  4),
+(1, '2026-11-15 22:00:00', 8,  7),
+(1, '2026-11-15 22:00:00', 9,  14),
+(1, '2026-11-15 22:00:00', 10, 8),
 -- TOP100 23:00
-(1, '2026-11-15 23:00:00', 1, 11),
-(1, '2026-11-15 23:00:00', 2, 1),
-(1, '2026-11-15 23:00:00', 3, 3),
-(1, '2026-11-15 23:00:00', 4, 5),
-(1, '2026-11-15 23:00:00', 5, 4),
+(1, '2026-11-15 23:00:00', 1,  11),
+(1, '2026-11-15 23:00:00', 2,  1),
+(1, '2026-11-15 23:00:00', 3,  3),
+(1, '2026-11-15 23:00:00', 4,  5),
+(1, '2026-11-15 23:00:00', 5,  4),
+(1, '2026-11-15 23:00:00', 6,  13),
+(1, '2026-11-15 23:00:00', 7,  6),
+(1, '2026-11-15 23:00:00', 8,  14),
+(1, '2026-11-15 23:00:00', 9,  12),
+(1, '2026-11-15 23:00:00', 10, 7),
+-- HOT100 22:00
+(2, '2026-11-15 22:00:00', 1, 5),
+(2, '2026-11-15 22:00:00', 2, 4),
+(2, '2026-11-15 22:00:00', 3, 7),
 -- HOT100 23:00
 (2, '2026-11-15 23:00:00', 1, 4),
 (2, '2026-11-15 23:00:00', 2, 5),
 (2, '2026-11-15 23:00:00', 3, 6),
+-- 비오고 흐린 날 22:00
+(3, '2026-11-15 22:00:00', 1, 11),
+(3, '2026-11-15 22:00:00', 2, 6),
 -- 비오고 흐린 날 23:00
 (3, '2026-11-15 23:00:00', 1, 6),
 (3, '2026-11-15 23:00:00', 2, 11);
 
 -- ---------------------------------------------------------------------
--- play_queue  (스크린샷: With → NEON, NEON 재생 중)
+-- play_queue  (user 1 스크린샷: With → NEON, NEON 재생 중)
 -- ---------------------------------------------------------------------
 INSERT INTO play_queue (user_id, position, song_id, is_current, added_at) VALUES
-(1, 1, 1, 0, '2026-11-15 23:10:00'),
-(1, 2, 3, 1, '2026-11-15 23:12:00'),
-(2, 1, 4, 1, '2026-11-15 21:00:00');
+(1, 1, 1,  0, '2026-11-15 23:10:00'),
+(1, 2, 3,  1, '2026-11-15 23:12:00'),
+(2, 1, 4,  1, '2026-11-15 21:00:00'),
+(2, 2, 13, 0, '2026-11-15 21:01:00'),
+(3, 1, 14, 1, '2026-11-15 20:00:00'),
+(3, 2, 15, 0, '2026-11-15 20:01:00'),
+(3, 3, 13, 0, '2026-11-15 20:02:00');
 
 -- ---------------------------------------------------------------------
--- song_like  (스크린샷: 최신순으로 With → LOVE ATTACK)
+-- song_like  (user 1 스크린샷: 최신순으로 With → LOVE ATTACK)
 -- ---------------------------------------------------------------------
 INSERT INTO song_like (user_id, song_id, liked_at) VALUES
-(1, 1, '2026-11-14 20:00:00'),
-(1, 2, '2025-03-10 18:30:00'),
-(2, 4, '2026-11-15 21:05:00');
+(1, 1,  '2026-11-14 20:00:00'),
+(1, 2,  '2025-03-10 18:30:00'),
+(2, 4,  '2026-11-15 21:05:00'),
+(2, 13, '2026-11-10 12:00:00'),
+(3, 13, '2026-11-01 10:00:00'),
+(3, 14, '2026-11-02 10:00:00'),
+(3, 15, '2026-11-03 10:00:00'),
+(3, 3,  '2026-11-04 10:00:00');
 
 -- ---------------------------------------------------------------------
 -- play_history  (임의 값)
---   With        : 최근 5번 재생 → "많이 들은" 1위
---   LOVE ATTACK : 2025년에 1번만 재생 → "잊고 지낸" 에 나와야 함
---   NEON        : 2번 재생 (좋아요는 안 함 → 좋아요 화면에는 안 나와야 함)
+--   user 1: With 5번(많이 들은), LOVE ATTACK 2025년에 1번(잊고 지낸), NEON 2번(좋아요 안 함 → 좋아요 화면 X)
+--   user 2: 사랑하면 3번(많이 들은), Die With A Smile 6월에 1번(잊고 지낸)
+--   user 3: Espresso 4번(많이 들은), Blinding Lights 2번, NEON 1번, Die With A Smile 0번(잊고 지낸: 재생 기록 없음)
 -- ---------------------------------------------------------------------
 INSERT INTO play_history (user_id, song_id, played_at) VALUES
-(1, 1, '2026-11-10 08:00:00'),
-(1, 1, '2026-11-12 08:05:00'),
-(1, 1, '2026-11-14 20:01:00'),
-(1, 1, '2026-11-15 22:30:00'),
-(1, 1, '2026-11-15 23:10:00'),
-(1, 2, '2025-03-10 18:31:00'),
-(1, 3, '2026-11-15 22:40:00'),
-(1, 3, '2026-11-15 23:12:00'),
-(2, 4, '2026-11-15 21:00:00');
+(1, 1,  '2026-11-10 08:00:00'),
+(1, 1,  '2026-11-12 08:05:00'),
+(1, 1,  '2026-11-14 20:01:00'),
+(1, 1,  '2026-11-15 22:30:00'),
+(1, 1,  '2026-11-15 23:10:00'),
+(1, 2,  '2025-03-10 18:31:00'),
+(1, 3,  '2026-11-15 22:40:00'),
+(1, 3,  '2026-11-15 23:12:00'),
+(2, 4,  '2026-11-13 21:00:00'),
+(2, 4,  '2026-11-14 21:00:00'),
+(2, 4,  '2026-11-15 21:00:00'),
+(2, 13, '2026-06-01 12:00:00'),
+(3, 14, '2026-11-12 20:00:00'),
+(3, 14, '2026-11-13 20:00:00'),
+(3, 14, '2026-11-14 20:00:00'),
+(3, 14, '2026-11-15 20:00:00'),
+(3, 15, '2026-11-14 20:10:00'),
+(3, 15, '2026-11-15 20:10:00'),
+(3, 3,  '2026-11-15 20:20:00');
 ```
 
 
@@ -1043,17 +1177,20 @@ WHERE l.user_id = @user_id
 ORDER BY l.liked_at DESC;
 
 -- =====================================================================
--- ③ 좋아요 > 곡 - 많이 들은 (재생 횟수 많은 순)
---   LEFT JOIN : 한 번도 안 들은 좋아요 곡도 0회로 나오게
+-- ③ 좋아요 > 곡 - 많이 들은 (3회 이상 들은 좋아요 곡, 재생 횟수 많은 순)  ※ 결정사항 #13
+--   HAVING : COUNT 로 묶은 뒤의 값으로 거를 때는 WHERE 가 아니라 HAVING
 -- =====================================================================
+SET @min_play = 3;
+
 SELECT si.song_id, si.song_title, si.artists, si.cover_url,
        COUNT(h.history_id) AS play_count
 FROM song_like l
 JOIN song_info si ON si.song_id = l.song_id
-LEFT JOIN play_history h
+JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
 GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
+HAVING play_count >= @min_play
 ORDER BY play_count DESC, si.song_id;
 
 -- =====================================================================
@@ -1071,5 +1208,559 @@ GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
 HAVING last_played_at IS NULL
     OR last_played_at < DATE_SUB(@now, INTERVAL 30 DAY)
 ORDER BY last_played_at;
+```
+
+
+---
+
+# 🐍 파일: `api/app.py`
+
+```python
+"""
+멜론 텀프로젝트 API (Python Flask + pymysql)
+
+화면 ① 홈          : GET  /api/home/new-songs, GET /api/home/chart, GET /api/users/<id>/now-playing
+화면 ② 재생목록    : GET/POST /api/users/<id>/queue, PATCH /api/users/<id>/queue/current,
+                     DELETE /api/users/<id>/queue/<position>
+화면 ③ 좋아요 > 곡 : GET/POST /api/users/<id>/likes/songs, DELETE /api/users/<id>/likes/songs/<song_id>
+재생 기록         : POST /api/users/<id>/plays  (곡을 한 번 들을 때마다 play_history 1행 → 많이 들은/잊고 지낸의 원본)
+
+- SQL 은 sql/03_view_queries.sql 의 쿼리를 그대로 옮긴 것이에요. @변수 자리에 %s (입력값) 가 들어가요.
+- 곡 정보 + 아티스트 이름은 VIEW song_info 에서 가져와요.
+- 실행: python app.py  →  http://localhost:5000
+"""
+from datetime import date, datetime
+from decimal import Decimal
+
+from flask import Flask, jsonify, request
+
+import db
+
+app = Flask(__name__)
+app.json.ensure_ascii = False      # 한글이 \uXXXX 로 깨지지 않게
+app.json.sort_keys = False         # JSON 키 순서를 코드에 쓴 순서대로
+
+# 팀 결정사항 (docs/03_결정사항.md)
+MIN_PLAY_COUNT = 3        # #13  "많이 들은" = 3회 이상 들은 곡
+FORGOTTEN_DAYS = 30       # #7   "잊고 지낸" = 30일 넘게 안 들은 곡
+DEFAULT_NEW_SONGS = 8     # 홈 최신음악 기본 개수
+DEFAULT_CHART_SIZE = 10   # 홈 멜론차트 기본 개수
+
+
+# ---------------------------------------------------------------------
+# 공통 도우미
+# ---------------------------------------------------------------------
+def clean(row):
+    """DB 에서 받은 dict 의 날짜/Decimal 값을 JSON 으로 보낼 수 있는 형태로 바꿔요."""
+    out = {}
+    for k, v in row.items():
+        if isinstance(v, datetime):
+            v = v.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(v, date):
+            v = v.strftime("%Y-%m-%d")
+        elif isinstance(v, Decimal):
+            v = int(v) if v == int(v) else float(v)
+        out[k] = v
+    return out
+
+
+def error(message, status):
+    return jsonify({"error": message}), status
+
+
+def user_exists(user_id):
+    return db.fetch_one("SELECT user_id FROM users WHERE user_id = %s", (user_id,)) is not None
+
+
+def song_exists(song_id):
+    return db.fetch_one("SELECT song_id FROM song WHERE song_id = %s", (song_id,)) is not None
+
+
+def now_param():
+    """테스트용 ?now=YYYY-MM-DD HH:MM:SS (생략하면 None → SQL 에서 NOW() 사용)."""
+    return request.args.get("now") or None
+
+
+def rank_change_label(change):
+    """rank_change 숫자 → 화면 표시 ('-', '▲1', '▼2', 'NEW')"""
+    if change is None:
+        return "NEW"
+    if change > 0:
+        return f"▲{change}"
+    if change < 0:
+        return f"▼{-change}"
+    return "-"
+
+
+@app.errorhandler(404)
+def not_found(_):
+    return error("not found", 404)
+
+
+@app.errorhandler(400)
+def bad_request(e):
+    return error(getattr(e, "description", "bad request"), 400)
+
+
+# =====================================================================
+# ① 홈
+# =====================================================================
+@app.get("/api/home/new-songs")
+def home_new_songs():
+    """최신음악 (탭: 전체 / 국내 / 해외)  ?region=국내|해외&limit=8"""
+    region = request.args.get("region") or None
+    if region not in (None, "국내", "해외"):
+        return error("region 은 '국내' 또는 '해외' 만 가능해요", 400)
+    limit = request.args.get("limit", DEFAULT_NEW_SONGS, type=int)
+
+    rows = db.fetch_all(
+        """
+        SELECT si.song_id, si.song_title, si.artists, si.cover_url, si.release_date, si.region
+        FROM song_info si
+        WHERE (%s IS NULL OR si.region = %s)
+        ORDER BY si.release_date DESC, si.song_id
+        LIMIT %s
+        """,
+        (region, region, limit),
+    )
+    return jsonify({"region": region or "전체", "count": len(rows), "songs": [clean(r) for r in rows]})
+
+
+@app.get("/api/home/chart")
+def home_chart():
+    """멜론차트 (가장 최근 기준 시각 + 순위 변동)  ?chart_id=1&limit=10"""
+    chart_id = request.args.get("chart_id", 1, type=int)
+    limit = request.args.get("limit", DEFAULT_CHART_SIZE, type=int)
+    now = now_param()
+
+    chart = db.fetch_one("SELECT chart_id, chart_name FROM chart WHERE chart_id = %s", (chart_id,))
+    if chart is None:
+        return error("없는 chart_id 예요", 404)
+
+    # 가장 최근 기준 시각 (cur_time) 과 그 직전 시각 (prev_time)
+    t = db.fetch_one(
+        """
+        SELECT MAX(chart_time) AS cur_time
+        FROM chart_entry
+        WHERE chart_id = %s AND chart_time <= COALESCE(%s, NOW())
+        """,
+        (chart_id, now),
+    )
+    cur_time = t["cur_time"] if t else None
+    if cur_time is None:
+        return jsonify({**chart, "base_time": None, "items": []})
+
+    p = db.fetch_one(
+        "SELECT MAX(chart_time) AS prev_time FROM chart_entry WHERE chart_id = %s AND chart_time < %s",
+        (chart_id, cur_time),
+    )
+    prev_time = p["prev_time"] if p else None
+
+    rows = db.fetch_all(
+        """
+        SELECT cur.rank_no,
+               prev.rank_no - cur.rank_no AS rank_change,
+               si.song_id, si.song_title, si.artists, si.cover_url
+        FROM chart_entry cur
+        LEFT JOIN chart_entry prev
+               ON prev.chart_id   = cur.chart_id
+              AND prev.chart_time = %s
+              AND prev.song_id    = cur.song_id
+        JOIN song_info si ON si.song_id = cur.song_id
+        WHERE cur.chart_id   = %s
+          AND cur.chart_time = %s
+        ORDER BY cur.rank_no
+        LIMIT %s
+        """,
+        (prev_time, chart_id, cur_time, limit),
+    )
+    items = []
+    for r in rows:
+        r = clean(r)
+        r["change_label"] = rank_change_label(r["rank_change"])
+        items.append(r)
+
+    return jsonify({
+        **chart,
+        "base_time": clean({"t": cur_time})["t"],
+        "prev_time": clean({"t": prev_time})["t"],
+        "items": items,
+    })
+
+
+@app.get("/api/users/<int:user_id>/now-playing")
+def now_playing(user_id):
+    """미니플레이어: 지금 재생 중인 곡"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    row = db.fetch_one(
+        """
+        SELECT q.position, si.song_id, si.song_title, si.artists, si.cover_url, si.duration_sec
+        FROM play_queue q
+        JOIN song_info si ON si.song_id = q.song_id
+        WHERE q.user_id = %s AND q.is_current = 1
+        """,
+        (user_id,),
+    )
+    return jsonify({"user_id": user_id, "now_playing": clean(row) if row else None})
+
+
+# =====================================================================
+# ② 재생목록
+# =====================================================================
+@app.get("/api/users/<int:user_id>/queue")
+def get_queue(user_id):
+    """재생목록: 곡 수 + 곡 리스트 (내설정순)"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    rows = db.fetch_all(
+        """
+        SELECT q.position, q.is_current, si.song_id, si.song_title, si.artists, si.cover_url, q.added_at
+        FROM play_queue q
+        JOIN song_info si ON si.song_id = q.song_id
+        WHERE q.user_id = %s
+        ORDER BY q.position
+        """,
+        (user_id,),
+    )
+    return jsonify({"user_id": user_id, "song_count": len(rows), "songs": [clean(r) for r in rows]})
+
+
+@app.post("/api/users/<int:user_id>/queue")
+def add_to_queue(user_id):
+    """재생목록 맨 뒤에 곡 추가  body: {"song_id": 4}"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    body = request.get_json(silent=True) or {}
+    song_id = body.get("song_id")
+    if not isinstance(song_id, int):
+        return error("song_id (정수) 가 필요해요", 400)
+    if not song_exists(song_id):
+        return error("없는 song_id 예요", 404)
+
+    with db.transaction() as cur:
+        cur.execute("SELECT COALESCE(MAX(position), 0) AS last_pos FROM play_queue WHERE user_id = %s", (user_id,))
+        last_pos = cur.fetchone()["last_pos"]
+        position = last_pos + 1
+        is_current = 1 if last_pos == 0 else 0      # 비어 있던 재생목록이면 바로 재생 곡으로
+        cur.execute(
+            "INSERT INTO play_queue (user_id, position, song_id, is_current) VALUES (%s, %s, %s, %s)",
+            (user_id, position, song_id, is_current),
+        )
+
+    row = db.fetch_one(
+        """
+        SELECT q.position, q.is_current, si.song_id, si.song_title, si.artists, q.added_at
+        FROM play_queue q JOIN song_info si ON si.song_id = q.song_id
+        WHERE q.user_id = %s AND q.position = %s
+        """,
+        (user_id, position),
+    )
+    return jsonify({"user_id": user_id, "added": clean(row)}), 201
+
+
+@app.patch("/api/users/<int:user_id>/queue/current")
+def set_current(user_id):
+    """현재 재생 곡 바꾸기  body: {"position": 1}  (사용자당 is_current=1 은 1곡만 → 트랜잭션으로 보장)"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    body = request.get_json(silent=True) or {}
+    position = body.get("position")
+    if not isinstance(position, int):
+        return error("position (정수) 이 필요해요", 400)
+
+    with db.transaction() as cur:
+        cur.execute("SELECT song_id FROM play_queue WHERE user_id = %s AND position = %s", (user_id, position))
+        if cur.fetchone() is None:
+            return error("재생목록에 그 position 이 없어요", 404)
+        cur.execute("UPDATE play_queue SET is_current = 0 WHERE user_id = %s", (user_id,))
+        cur.execute("UPDATE play_queue SET is_current = 1 WHERE user_id = %s AND position = %s", (user_id, position))
+
+    return now_playing(user_id)
+
+
+@app.delete("/api/users/<int:user_id>/queue/<int:position>")
+def remove_from_queue(user_id, position):
+    """재생목록에서 곡 빼기. 뒤 곡들의 position 을 한 칸씩 당겨서 빈 번호가 없게 함"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+
+    with db.transaction() as cur:
+        cur.execute("SELECT song_id, is_current FROM play_queue WHERE user_id = %s AND position = %s", (user_id, position))
+        target = cur.fetchone()
+        if target is None:
+            return error("재생목록에 그 position 이 없어요", 404)
+        cur.execute("DELETE FROM play_queue WHERE user_id = %s AND position = %s", (user_id, position))
+        # 뒤 번호 당기기 (position 이 PK 라서 작은 번호부터 차례로 바꿔야 충돌이 없음)
+        cur.execute(
+            "UPDATE play_queue SET position = position - 1 WHERE user_id = %s AND position > %s ORDER BY position",
+            (user_id, position),
+        )
+        # 재생 중이던 곡을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
+        if target["is_current"]:
+            cur.execute(
+                """
+                UPDATE play_queue SET is_current = 1
+                WHERE user_id = %s AND position = (
+                    SELECT p FROM (
+                        SELECT COALESCE(MIN(CASE WHEN position >= %s THEN position END), MAX(position)) AS p
+                        FROM play_queue WHERE user_id = %s
+                    ) AS t
+                )
+                """,
+                (user_id, position, user_id),
+            )
+
+    return jsonify({"user_id": user_id, "deleted_position": position, "deleted_song_id": target["song_id"]})
+
+
+# =====================================================================
+# ③ 음악서랍 > 좋아요 > 곡
+# =====================================================================
+@app.get("/api/users/<int:user_id>/likes/songs")
+def liked_songs(user_id):
+    """좋아요 곡 목록  ?filter=all(최신순) | most(많이 들은) | forgotten(잊고 지낸)"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    flt = request.args.get("filter", "all")
+    now = now_param()
+
+    if flt == "all":
+        rows = db.fetch_all(
+            """
+            SELECT si.song_id, si.song_title, si.artists, si.cover_url, l.liked_at
+            FROM song_like l
+            JOIN song_info si ON si.song_id = l.song_id
+            WHERE l.user_id = %s
+            ORDER BY l.liked_at DESC
+            """,
+            (user_id,),
+        )
+    elif flt == "most":
+        rows = db.fetch_all(
+            """
+            SELECT si.song_id, si.song_title, si.artists, si.cover_url,
+                   COUNT(h.history_id) AS play_count
+            FROM song_like l
+            JOIN song_info si ON si.song_id = l.song_id
+            JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
+            WHERE l.user_id = %s
+            GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
+            HAVING play_count >= %s
+            ORDER BY play_count DESC, si.song_id
+            """,
+            (user_id, MIN_PLAY_COUNT),
+        )
+    elif flt == "forgotten":
+        rows = db.fetch_all(
+            """
+            SELECT si.song_id, si.song_title, si.artists, si.cover_url,
+                   MAX(h.played_at) AS last_played_at
+            FROM song_like l
+            JOIN song_info si ON si.song_id = l.song_id
+            LEFT JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
+            WHERE l.user_id = %s
+            GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
+            HAVING last_played_at IS NULL
+                OR last_played_at < DATE_SUB(COALESCE(%s, NOW()), INTERVAL %s DAY)
+            ORDER BY last_played_at
+            """,
+            (user_id, now, FORGOTTEN_DAYS),
+        )
+    else:
+        return error("filter 는 all / most / forgotten 중 하나예요", 400)
+
+    return jsonify({"user_id": user_id, "filter": flt, "count": len(rows), "songs": [clean(r) for r in rows]})
+
+
+@app.post("/api/users/<int:user_id>/likes/songs")
+def like_song(user_id):
+    """좋아요  body: {"song_id": 3}"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    body = request.get_json(silent=True) or {}
+    song_id = body.get("song_id")
+    if not isinstance(song_id, int):
+        return error("song_id (정수) 가 필요해요", 400)
+    if not song_exists(song_id):
+        return error("없는 song_id 예요", 404)
+    if db.fetch_one("SELECT 1 FROM song_like WHERE user_id = %s AND song_id = %s", (user_id, song_id)):
+        return error("이미 좋아요한 곡이에요", 409)      # PK (user_id, song_id) 중복
+
+    with db.transaction() as cur:
+        cur.execute("INSERT INTO song_like (user_id, song_id) VALUES (%s, %s)", (user_id, song_id))
+
+    row = db.fetch_one(
+        """
+        SELECT si.song_id, si.song_title, si.artists, l.liked_at
+        FROM song_like l JOIN song_info si ON si.song_id = l.song_id
+        WHERE l.user_id = %s AND l.song_id = %s
+        """,
+        (user_id, song_id),
+    )
+    return jsonify({"user_id": user_id, "liked": clean(row)}), 201
+
+
+@app.delete("/api/users/<int:user_id>/likes/songs/<int:song_id>")
+def unlike_song(user_id, song_id):
+    """좋아요 취소"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    with db.transaction() as cur:
+        cur.execute("DELETE FROM song_like WHERE user_id = %s AND song_id = %s", (user_id, song_id))
+        deleted = cur.rowcount
+    if deleted == 0:
+        return error("좋아요하지 않은 곡이에요", 404)
+    return jsonify({"user_id": user_id, "song_id": song_id, "unliked": True})
+
+
+# =====================================================================
+# 재생 기록 (play_history 에 쌓기) → "많이 들은" / "잊고 지낸" 의 원본 데이터
+# =====================================================================
+@app.post("/api/users/<int:user_id>/plays")
+def record_play(user_id):
+    """곡을 한 번 들었을 때 재생 기록 1행 추가  body: {"song_id": 1}"""
+    if not user_exists(user_id):
+        return error("없는 user_id 예요", 404)
+    body = request.get_json(silent=True) or {}
+    song_id = body.get("song_id")
+    if not isinstance(song_id, int):
+        return error("song_id (정수) 가 필요해요", 400)
+    if not song_exists(song_id):
+        return error("없는 song_id 예요", 404)
+
+    with db.transaction() as cur:
+        cur.execute("INSERT INTO play_history (user_id, song_id) VALUES (%s, %s)", (user_id, song_id))
+        history_id = cur.lastrowid          # AUTO_INCREMENT 로 매겨진 번호
+
+    # 방금 쌓인 기록까지 포함해서, 이 사용자가 이 곡을 몇 번 / 마지막으로 언제 들었는지
+    stats = db.fetch_one(
+        """
+        SELECT COUNT(*) AS play_count, MAX(played_at) AS last_played_at
+        FROM play_history
+        WHERE user_id = %s AND song_id = %s
+        """,
+        (user_id, song_id),
+    )
+    return jsonify({
+        "user_id": user_id,
+        "song_id": song_id,
+        "history_id": history_id,
+        **clean(stats),
+    }), 201
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
+```
+
+
+---
+
+# 🐍 파일: `api/db.py`
+
+```python
+"""
+db.py : MySQL 연결 (pymysql)
+
+- config.py 의 DB 설정을 읽어서 연결을 만들어요.
+- 결과는 dict 로 받아요 (DictCursor) → 그대로 JSON 으로 바꾸기 쉬움
+- 사용법
+    rows = fetch_all("SELECT ... WHERE user_id = %s", (user_id,))
+    row  = fetch_one("SELECT COUNT(*) AS n FROM ...", ())
+    with transaction() as cur:          # 쓰기(INSERT/UPDATE/DELETE) 는 트랜잭션 안에서
+        cur.execute("INSERT ...", (...))
+"""
+from contextlib import contextmanager
+
+import pymysql
+import pymysql.cursors
+
+try:
+    import config
+except ImportError as e:  # config.example.py 를 복사해서 config.py 를 만들어야 함
+    raise SystemExit("config.py 가 없어요. config.example.py 를 복사해서 config.py 를 만들고 비밀번호를 적어 주세요.") from e
+
+
+def connect():
+    """새 DB 연결을 돌려줘요 (autocommit 꺼짐 → 쓰기는 commit 필요)."""
+    return pymysql.connect(
+        host=config.DB_HOST,
+        port=config.DB_PORT,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
+        database=config.DB_NAME,
+        charset="utf8mb4",
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False,
+    )
+
+
+def fetch_all(sql, params=()):
+    """SELECT 결과 전체를 list[dict] 로."""
+    conn = connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchall()
+    finally:
+        conn.close()
+
+
+def fetch_one(sql, params=()):
+    """SELECT 결과 첫 행을 dict 로 (없으면 None)."""
+    conn = connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchone()
+    finally:
+        conn.close()
+
+
+@contextmanager
+def transaction():
+    """
+    쓰기 작업용. with 블록이 정상 종료되면 commit, 예외가 나면 rollback.
+        with transaction() as cur:
+            cur.execute(...)
+            cur.execute(...)
+    """
+    conn = connect()
+    try:
+        with conn.cursor() as cur:
+            yield cur
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+```
+
+
+---
+
+# 🐍 파일: `api/config.example.py`
+
+```python
+# 이 파일을 복사해서 config.py 로 이름을 바꾸고, 자기 PC 의 MySQL 비밀번호를 적어 주세요.
+# config.py 는 카톡 / ZIP 으로 공유하지 않아요 (비밀번호 보호).
+
+DB_HOST = "localhost"
+DB_PORT = 3306
+DB_USER = "root"
+DB_PASSWORD = ""        # ← 여기에 비밀번호
+DB_NAME = "melon"
+```
+
+
+---
+
+# 🐍 파일: `api/requirements.txt`
+
+```text
+flask>=3.0
+pymysql>=1.1
 ```
 
