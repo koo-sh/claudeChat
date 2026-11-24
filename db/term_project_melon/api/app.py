@@ -9,6 +9,8 @@
 
 - SQL 은 sql/03_view_queries.sql 의 쿼리를 그대로 옮긴 것이에요. @변수 자리에 %s (입력값) 가 들어가요.
 - 곡 정보 + 아티스트 이름은 VIEW song_info 에서 가져와요.
+- play_queue.is_current 는 재생 중 = 1, 아니면 NULL 이에요 (0 은 CHECK 제약 위반).
+  "사용자당 재생 중인 곡 1개" 는 UNIQUE (user_id, is_current) 로 DB 가 보장해요.
 - 실행: python app.py  →  http://localhost:5000
 """
 from datetime import date, datetime
@@ -192,7 +194,7 @@ def now_playing(user_id):
 # =====================================================================
 @app.get("/api/users/<int:user_id>/queue")
 def get_queue(user_id):
-    """재생목록: 곡 수 + 곡 리스트 (내설정순)"""
+    """재생목록: 곡 수 + 곡 리스트 (내설정순).  is_current 는 재생 중 = 1, 아니면 null"""
     if not user_exists(user_id):
         return error("없는 user_id 예요", 404)
     rows = db.fetch_all(
@@ -224,7 +226,7 @@ def add_to_queue(user_id):
         cur.execute("SELECT COALESCE(MAX(position), 0) AS last_pos FROM play_queue WHERE user_id = %s", (user_id,))
         last_pos = cur.fetchone()["last_pos"]
         position = last_pos + 1
-        is_current = 1 if last_pos == 0 else 0      # 비어 있던 재생목록이면 바로 재생 곡으로
+        is_current = 1 if last_pos == 0 else None   # 비어 있던 재생목록이면 바로 재생 곡으로, 아니면 NULL (0 은 CHECK 위반)
         cur.execute(
             "INSERT INTO play_queue (user_id, position, song_id, is_current) VALUES (%s, %s, %s, %s)",
             (user_id, position, song_id, is_current),
@@ -243,7 +245,9 @@ def add_to_queue(user_id):
 
 @app.patch("/api/users/<int:user_id>/queue/current")
 def set_current(user_id):
-    """현재 재생 곡 바꾸기  body: {"position": 1}  (사용자당 is_current=1 은 1곡만 → 트랜잭션으로 보장)"""
+    """현재 재생 곡 바꾸기  body: {"position": 1}
+    사용자당 is_current=1 은 1곡만 → UNIQUE (user_id, is_current) 로 DB 가 보장.
+    먼저 전부 NULL 로 비운 뒤 지정한 곡만 1 로 바꿔야 UNIQUE 에 걸리지 않아요."""
     if not user_exists(user_id):
         return error("없는 user_id 예요", 404)
     body = request.get_json(silent=True) or {}
@@ -255,7 +259,7 @@ def set_current(user_id):
         cur.execute("SELECT song_id FROM play_queue WHERE user_id = %s AND position = %s", (user_id, position))
         if cur.fetchone() is None:
             return error("재생목록에 그 position 이 없어요", 404)
-        cur.execute("UPDATE play_queue SET is_current = 0 WHERE user_id = %s", (user_id,))
+        cur.execute("UPDATE play_queue SET is_current = NULL WHERE user_id = %s AND is_current = 1", (user_id,))
         cur.execute("UPDATE play_queue SET is_current = 1 WHERE user_id = %s AND position = %s", (user_id, position))
 
     return now_playing(user_id)
@@ -278,8 +282,10 @@ def remove_from_queue(user_id, position):
             "UPDATE play_queue SET position = position - 1 WHERE user_id = %s AND position > %s ORDER BY position",
             (user_id, position),
         )
-        # 재생 중이던 곡을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
-        if target["is_current"]:
+        # 재생 중이던 곡(is_current = 1)을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
+        # (재생 중이 아니던 곡은 is_current 가 NULL → None 이라 여기 안 들어옴)
+        # 재생 중이던 행은 이미 지웠으므로 1 로 바꿔도 UNIQUE 에 걸리지 않음
+        if target["is_current"] == 1:
             cur.execute(
                 """
                 UPDATE play_queue SET is_current = 1

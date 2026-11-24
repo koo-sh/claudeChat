@@ -3,6 +3,7 @@
 --   화면 ① 홈(최신음악, 멜론차트)  ② 재생목록  ③ 음악서랍 > 좋아요 > 곡
 --   설계 근거: docs/02_DB설계.md
 --   실행: MySQL Workbench에서 이 파일 전체 실행 → 02_sample_data.sql 실행
+--   ※ play_queue 의 CHECK 제약은 MySQL 8.0.16 이상에서만 실제로 검사됨
 -- =====================================================================
 
 DROP DATABASE IF EXISTS melon;
@@ -55,8 +56,8 @@ CREATE TABLE song_artist (
     artist_id     INT      NOT NULL,
     artist_order  TINYINT  NOT NULL DEFAULT 1,
     PRIMARY KEY (song_id, artist_id),
-    FOREIGN KEY (song_id)   REFERENCES song (song_id),
-    FOREIGN KEY (artist_id) REFERENCES artist (artist_id)
+    FOREIGN KEY (song_id)   REFERENCES song (song_id)     ON DELETE CASCADE,
+    FOREIGN KEY (artist_id) REFERENCES artist (artist_id) ON DELETE CASCADE
 );
 
 -- ---------------------------------------------------------------------
@@ -87,16 +88,22 @@ CREATE TABLE chart_entry (
 -- ---------------------------------------------------------------------
 -- 7. play_queue : 재생목록 (지금 듣는 곡 대기열)
 --    position   : "내설정순" 순서 (1, 2, 3 ...)
---    is_current : 지금 재생 중인 곡이면 1 (사용자당 1곡만 1이어야 함 → API 에서 관리)
+--    is_current : 지금 재생 중인 곡이면 1, 아니면 NULL  (0 은 쓰지 않음)
+--      - CHECK (is_current = 1)        → 넣을 수 있는 값은 1 또는 NULL 뿐
+--      - UNIQUE (user_id, is_current)  → 사용자당 1 은 한 행만 가능
+--                                        NULL 은 UNIQUE 에서 중복으로 치지 않아서 여러 행 가능
+--      → "사용자당 재생 중인 곡은 1곡" 을 API 가 아니라 DB 가 보장
 --    같은 곡을 두 번 넣을 수 있어서 PK 는 (user_id, position)
 -- ---------------------------------------------------------------------
 CREATE TABLE play_queue (
     user_id     INT         NOT NULL,
     position    INT         NOT NULL,
     song_id     INT         NOT NULL,
-    is_current  TINYINT(1)  NOT NULL DEFAULT 0,
+    is_current  TINYINT(1)  NULL DEFAULT NULL,
     added_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, position),
+    UNIQUE KEY uq_one_current (user_id, is_current),
+    CONSTRAINT chk_is_current CHECK (is_current = 1),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (song_id) REFERENCES song (song_id)
 );

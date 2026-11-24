@@ -1,6 +1,6 @@
 # AI용 전체자료: 멜론 DB 텀프로젝트
 
-> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL + API 코드)가 들어 있어요.** (버전 v3.0) ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
+> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL + API 코드)가 들어 있어요.** (버전 v4.0) ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
 > 이 파일은 ZIP을 만들 때 자동으로 합쳐서 만들어요. **직접 고치지 말고**, 고칠 내용은 원본 파일(`docs/`, `sql/`)에서 고쳐 주세요.
 
 ---
@@ -42,6 +42,9 @@
 - API는 `04_API명세.md`의 **11개**예요(조회 5 + 쓰기 6). 11번 `POST /api/users/<id>/plays`가 재생 기록을 쌓아요. 에러는 `{"error": "이유"}` + 400/404/409로 돌려줘요.
 - "많이 들은" = **3회 이상** 들은 좋아요 곡, "잊고 지낸" = 30일 넘게 안 들었거나 한 번도 안 들은 좋아요 곡이에요.
 - 화면별 쿼리는 `sql/03_view_queries.sql`에 있어요. `api/app.py`에도 같은 쿼리가 `%s` 입력값 방식으로 들어 있어서, 쿼리를 바꾸면 **두 곳을 같이** 고쳐야 해요. 입력값은 `@변수`(`@user_id`, `@region`, `@chart_id`, `@now`)로 받고, 곡 정보와 아티스트 이름은 VIEW `song_info`를 JOIN해서 가져와요.
+- `play_queue.is_current`는 **재생 중 = 1, 아니면 NULL**이에요(0 아님). `UNIQUE(user_id, is_current)` + `CHECK(is_current = 1)`로 "사용자당 재생 중인 곡 1곡"을 DB가 보장해요.
+- `ON DELETE CASCADE`는 `song_artist`에만 있어요. 재생 기록·좋아요·재생목록·차트는 데이터 보호를 위해 일부러 넣지 않았어요.
+- ERD(`images/erd.png`)는 MySQL Workbench로 실제 DB에서 생성했어요. DB 변경 이유는 `docs/06_DB변경사항.md`에 있어요.
 - 멜론차트는 **1시간 단위**로 저장해요. 순위 변동(▲▼NEW)은 저장하지 않고, 직전 시각 기록과 셀프 조인해서 계산해요.
 - "재생목록"은 지금 듣는 곡 대기열이에요. 사용자가 이름을 붙여 만드는 "플레이리스트"가 아니에요. 좋아요는 **곡 탭만** 다뤄요.
 - 로그인은 구현하지 않고, URL의 `user_id`로 사용자를 구분해요.
@@ -81,6 +84,7 @@
 | `docs/03_결정사항.md` | 결정할 것과 결정된 것 |
 | `docs/04_API명세.md` | API 목록 |
 | `docs/05_실행가이드.md` | SQL 실행 방법과 기대 결과 |
+| `docs/06_DB변경사항.md` | DB 최종 변경 내용과 이유 |
 | `변경내역.md` | ZIP 버전 기록 |
 | `sql/01_schema.sql` → `02_sample_data.sql` → `03_view_queries.sql` | 이 순서로 실행 |
 | `api/` | Flask API 11개: `app.py`, `db.py`, `config.example.py`, `requirements.txt`, `README.md`(실행 방법), `postman_collection.json` |
@@ -106,8 +110,8 @@
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
 > 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL과 API 실행해 보기
 >
-> 지금 버전: **v3.0**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
-> **v3.0 핵심**: 팀원 v2.0(API, 보고서, PPT)을 합치고, 재생 기록 API(11번 `POST /api/users/<id>/plays`)를 추가했어요. 테이블은 그대로예요.
+> 지금 버전: **v4.0**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
+> **v4.0 핵심**: DB 최종본. "재생 중인 곡은 사용자당 1곡"을 DB 제약(UNIQUE + CHECK)으로 보장, CASCADE는 song_artist에만, ERD를 Workbench로 다시 생성. MySQL 8에서 실행 확인 완료.
 
 ### AI(Claude, ChatGPT, Gemini 등)와 같이 작업할 때
 
@@ -132,7 +136,7 @@
 |---|---|---|
 | 0 | 기초 작업 ✅ | 계획, 화면 분석, 기초 테이블, 샘플 데이터, 쿼리 |
 | 1 | 킥오프 | 역할 배정, 결정사항 확정, **단계별 날짜 정하기**, 각자 SQL 실행 확인 |
-| 2 | DB 확정 + API 개발 🔶 | 스키마 확정, ERD, Flask API (**API 11개 구현 완료**) |
+| 2 | DB 확정 + API 개발 ✅ | 스키마 확정, ERD, Flask API (**DB 최종 완료, API 11개 구현 완료**) |
 | 3 | 테스트 + 명세 | Postman 테스트, API 명세 완성 |
 | 4 | 보고서 + 슬라이드 🔶 | 원고 취합, 최종 점검, 리허설 (**초안 완성**) |
 | 5 | 제출 + 발표 | 슬라이드, 보고서 제출 → 10분 발표 + Q&A 5분 → 동료 평가 |
@@ -167,11 +171,12 @@
 |---|---|---|
 | [`docs/00_진행계획.md`](docs/00_진행계획.md) | 진행 순서, 역할(A~D), 단계별 할 일, 발표와 보고서 구성안, 파일 공유 규칙 | ✅ |
 | [`docs/01_화면분석.md`](docs/01_화면분석.md) | 화면별 필요 데이터 | ✅ |
-| [`docs/02_DB설계.md`](docs/02_DB설계.md) | ERD, 테이블, 정규화 근거, Q&A 대비 | ✅ 초안 |
+| [`docs/02_DB설계.md`](docs/02_DB설계.md) | ERD, 테이블, 정규화 근거, Q&A 대비 | ✅ |
+| [`docs/06_DB변경사항.md`](docs/06_DB변경사항.md) | DB 최종 변경 내용과 이유 (재생 중 1곡 제약, CASCADE, HOT100, LEFT JOIN, ERD) | ✅ |
 | [`docs/03_결정사항.md`](docs/03_결정사항.md) | 결정할 것과 결정된 것 | 🔶 일부 의견 필요 |
 | [`docs/04_API명세.md`](docs/04_API명세.md) | API 목록 11개, 시연 흐름 (JSON 예시는 보고서 4.2절) | ✅ |
 | [`docs/05_실행가이드.md`](docs/05_실행가이드.md) | SQL·API 실행 방법과 기대 결과, md 여는 법 | ✅ |
-| [`images/erd.png`](images/erd.png) | ERD 이미지 | ✅ 초안 |
+| [`images/erd.png`](images/erd.png) | ERD 이미지 (MySQL Workbench로 생성) | ✅ |
 | [`변경내역.md`](변경내역.md) | ZIP 버전별 변경 기록 | ✅ |
 | [`AI용_전체자료.md`](AI용_전체자료.md) | AI에 첨부할 통합 파일 (문서 + SQL + API 코드, ZIP 만들 때 자동 생성) | ✅ |
 | `images/` | 앱 스크린샷 3장 (`view1_home.jpg`, `view2_play_queue.jpg`, `view3_like_songs.jpg`) | ✅ |
@@ -208,7 +213,7 @@
 | 4 | 보고서 + 슬라이드 | 원고 넘기기 → 합치기 → 최종 점검과 리허설 (전원) | |
 | 5 | 제출 + 발표 | 제출(마감 직전은 피하기), 10분 발표 + Q&A 5분 | 제출 11/29 23:59 (공식) |
 
-> **현재 상태 (v3.0)**: 2단계 대부분 완료. API 11개 구현, 보고서와 발표 슬라이드 초안 완성. 남은 것은 아래 체크리스트의 빈칸이에요.
+> **현재 상태 (v4.0)**: **DB 최종 완료**(MySQL 8 실행 확인, Workbench ERD). API 11개 구현, 보고서와 발표 슬라이드 초안 완성. 남은 것은 아래 체크리스트의 빈칸이에요.
 
 각 단계는 **앞 단계가 끝나야 시작**하는 게 원칙이에요. 단, 2단계에서 D(문서)는 1장(앱/화면 소개)을 먼저 써도 돼요.
 
@@ -239,9 +244,10 @@
 
 #### Phase 2. DB 확정 + API 개발
 **A (DB)**
-- [ ] 킥오프 피드백을 스키마에 반영
+- [x] 스키마 최종: "재생 중인 곡 1곡" DB 제약, song_artist CASCADE (v3.1~v3.2) → [`06_DB변경사항.md`](06_DB변경사항.md)
+- [x] MySQL 8에서 `01 → 02 → 03` 실행 확인
 - [x] 샘플 데이터 확장: 차트 10위까지, 해외곡 3개, 사용자 3명 (v2.0)
-- [ ] ERD를 도구로 다시 그려서 `images/erd.png` 교체. 초안 이미지는 이미 있고, MySQL Workbench의 Reverse Engineer를 쓰면 SQL에서 자동으로 그려져요
+- [x] ERD를 MySQL Workbench(Reverse Engineer)로 다시 그려서 `images/erd.png` 교체
 - [x] `docs/02_DB설계.md`의 정규화 예시(재생목록 표 → 1NF → 2NF → 3NF)를 슬라이드용 표로 옮기기 (PPT 9번)
 
 **B (API 홈)**
@@ -267,6 +273,7 @@
 - [ ] 전원: 다른 사람 PC에서도 API가 실행되는지 교차 확인
 
 #### Phase 4. 보고서 + 슬라이드
+- [ ] 보고서·PPT에 DB 최종본 반영: 3.2절·PPT 7번 ERD 그림 교체, 4.2절 JSON의 `"is_current": 0` → `null`, 5.2절·PPT 15번 한계 표의 "사용자당 1곡 제약이 DB에 없음" 행 삭제(해결됨) → 설계 포인트(PPT 8번)로 이동
 - [ ] 표지, 역할 분담, 발표자 이름 칸 채우기 (보고서 표지·5.3절, PPT 1·2·16번)
 - [ ] 각 역할이 자기 파트 원고를 D에게 넘기기
 - [ ] D: 보고서와 슬라이드 합치기
@@ -422,11 +429,11 @@ GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않�
 > 상태: **기초 테이블 완료** (`sql/01_schema.sql`). MySQL 호환 서버에서 MySQL 8 기본 설정(엄격한 GROUP BY 모드)으로 실행해 확인했어요. Phase 1 킥오프 피드백을 받은 뒤 확정해요.
 > 실제 SQL: [`../sql/01_schema.sql`](../sql/01_schema.sql), 샘플 데이터: [`../sql/02_sample_data.sql`](../sql/02_sample_data.sql), 화면별 쿼리: [`../sql/03_view_queries.sql`](../sql/03_view_queries.sql)
 
-### ERD (초안)
+### ERD
 
 ![ERD](../images/erd.png)
 
-> 이미지 파일: [`../images/erd.png`](../images/erd.png). 발표용 ERD는 Phase 2에서 MySQL Workbench로 다시 그려요(결정사항 #6).
+> 이미지 파일: [`../images/erd.png`](../images/erd.png). **MySQL Workbench의 Reverse Engineer**로 실제 `melon` DB에서 자동 생성한 ERD예요. 실선 = 식별 관계(부모 키가 자식 PK의 일부), 점선 = 비식별 관계. 자세한 설명은 [`06_DB변경사항.md`](06_DB변경사항.md) 4절.
 
 ### 테이블 상세
 
@@ -438,7 +445,7 @@ GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않�
 | 4 | `song_artist` | (song_id, artist_id) | song, artist | artist_order (표시 순서) | 전체 |
 | 5 | `chart` | chart_id | | chart_name (TOP100, HOT100, 비오고 흐린 날) | 홈 (멜론차트) |
 | 6 | `chart_entry` | (chart_id, chart_time, rank_no) | chart, song | UNIQUE(chart_id, chart_time, song_id) | 홈 (멜론차트) |
-| 7 | `play_queue` | (user_id, position) | users, song | is_current, added_at | 재생목록, 미니플레이어 |
+| 7 | `play_queue` | (user_id, position) | users, song | is_current(재생 중 = 1, 아니면 NULL), added_at. **UNIQUE(user_id, is_current) + CHECK(is_current = 1)** | 재생목록, 미니플레이어 |
 | 8 | `song_like` | (user_id, song_id) | users, song | liked_at | 좋아요 |
 | 9 | `play_history` | history_id | users, song | played_at | 좋아요 (많이 들은 / 잊고 지낸) |
 
@@ -459,6 +466,8 @@ GitHub 없이 카톡으로 파일을 주고받으니, **버전이 꼬이지 않�
 | 차트에 왜 시각(chart_time)이 PK에 있나? | 차트가 매시 갱신되고, 순위 변동을 계산하려면 이전 시각 기록이 필요해서 |
 | 앨범 테이블은 왜 없나? | 고른 화면 3개는 모두 **곡 단위**로 보여줘요(앨범 화면이 없음). 커버, 발매일, 국내/해외를 `song`에 두면 모두 song_id에만 종속돼서 3NF를 만족해요 |
 | 재생 기록은 어떻게 쌓이나? | `POST /api/users/<id>/plays` API가 `play_history`에 INSERT 한 줄을 해요. history_id(AUTO_INCREMENT)와 played_at(DEFAULT CURRENT_TIMESTAMP)이 처음부터 있어서 **테이블을 고치지 않고** API만 추가했어요 |
+| 재생 중인 곡이 사용자당 1곡인 건 어떻게 보장하나? | `is_current`를 재생 중 = 1, 아니면 NULL로 저장해요. `UNIQUE(user_id, is_current)`는 NULL을 중복으로 치지 않아서 1은 사용자당 한 줄만 가능하고, `CHECK(is_current = 1)`이 다른 값(0 등)을 막아요. **API가 아니라 DB가 규칙을 보장**해요 (MySQL 8.0.16 이상) |
+| CASCADE는 왜 `song_artist`에만 있나? | `song_artist`는 곡의 일부라 곡이나 아티스트가 지워지면 같이 지워져야 해요. 재생 기록·좋아요·재생목록·차트 순위는 함부로 지워지면 안 되는 기록이라 일부러 넣지 않았어요(실수로 지우려 해도 FK가 막음). 탈퇴 후 복귀까지 고려하면 soft delete가 개선 방향이에요 |
 | 그럼 한계는? | 같은 앨범의 곡이 여러 개면 커버와 발매일이 곡마다 반복 저장돼요. 앨범 화면을 추가한다면 `album` 테이블을 분리하는 게 개선 방향이에요 |
 
 ### 정규화 근거 (발표, 보고서용)
@@ -523,7 +532,6 @@ PK = (user_id, position)
 | # | 질문 | 선택지 | 제안 | 팀 의견 |
 |---|---|---|---|---|
 | 5 | 역할 A~D 배정 | [`00_진행계획.md`](00_진행계획.md) 1절 | 기초를 만든 사람이 A(DB) | |
-| 6 | ERD 도구 | MySQL Workbench / draw.io / ERDCloud | **Workbench**: SQL에서 자동으로 그려져서 스키마와 어긋나지 않음 | |
 | 7 | "잊고 지낸" 기준 | 30일 / 60일 / 90일 이상 안 들음 | 30일 (지금 쿼리 기준). 바꾸면 `03_view_queries.sql` 한 줄만 수정 | |
 | 9 | 발표자 | 1명이 전부 / 파트별 나눠서 | 파트별 (Q&A 대응이 쉬움) | |
 | 12 | 단계별 날짜 | [`00_진행계획.md`](00_진행계획.md) 0절 표 | 제출일(11/29) 전에 "원고 넘기기", "최종 점검" 날짜를 따로 잡기 | |
@@ -554,6 +562,10 @@ PK = (user_id, position)
 | 11/18 | 10 | 쓰기 API 6개: 재생목록 추가·삭제·현재 곡 변경, 좋아요 추가·취소, **재생 기록 추가(11번)** |
 | 11/18 | | 재생 기록 API `POST /api/users/<id>/plays` 추가. **테이블 변경 없음** (play_history 그대로 사용) |
 | 11/18 | | ZIP 이름 규칙 = `melon_code_v번호.0.zip` (v1 → v2.0 → v3.0 → …) |
+| 11/24 | | `play_queue.is_current` = 재생 중 1 / 아니면 NULL + `UNIQUE(user_id, is_current)` + `CHECK(is_current = 1)` → "사용자당 재생 중인 곡 1곡"을 DB가 보장 (v3.1) |
+| 11/24 | | `ON DELETE CASCADE`는 `song_artist`에만 (곡의 일부). 재생 기록·좋아요·재생목록·차트는 데이터 보호를 위해 넣지 않음 (v3.2) |
+| 11/24 | 6 | ERD 도구 = **MySQL Workbench** (Reverse Engineer로 실제 DB에서 생성) |
+| 11/24 | | "많이 들은" 쿼리 `LEFT JOIN`으로 통일 (결과 동일). HOT100 22:00 샘플 1행 정리 (결과 동일) (v3.2) |
 
 
 ---
@@ -616,7 +628,7 @@ PK = (user_id, position)
 #### .md 문서를 보기 좋게 여는 법
 - **VSCode**: `term_project_melon` 폴더를 열고 .md 파일을 연 다음 `Ctrl + Shift + V`(미리보기)를 누르면 표와 그림이 정리돼서 보여요.
 - 메모장으로 열어도 내용은 읽을 수 있지만 표가 기호(`|`)로 보여요.
-- ERD는 이미지 파일 `images/erd.png`로 바로 볼 수 있어요.
+- ERD는 이미지 파일 `images/erd.png`로 바로 볼 수 있어요 (MySQL Workbench로 생성).
 
 ### 3. SQL 실행 (MySQL Workbench)
 
@@ -654,7 +666,7 @@ PK = (user_id, position)
 
 **미니플레이어**: NEON / A20, A20 LITE (position 2)
 
-**② 재생목록**: 곡 수 2, 리스트 `1. With (is_current 0)`, `2. NEON (is_current 1)`
+**② 재생목록**: 곡 수 2, 리스트 `1. With (is_current NULL)`, `2. NEON (is_current 1)`  ← 재생 중 = 1, 아니면 NULL
 
 **③ 좋아요 - 전체 (최신순)**: With → LOVE ATTACK
 **③ 좋아요 - 많이 들은 (3회 이상)**: With 5회 (LOVE ATTACK은 1회라 안 나와요)
@@ -679,6 +691,125 @@ PK = (user_id, position)
 
 ---
 
+# 📄 파일: `docs/06_DB변경사항.md`
+
+## 변경사항 (DB, v3.0 → 최종)
+
+DB 담당 최종본이에요. **SQL 3개는 v3.2와 같고**, ERD는 MySQL Workbench로 다시 그렸어요. 이 문서는 바뀐 내용과 이유를 실제 코드에 맞게 정리한 거예요.
+실행 순서: `sql/01_schema.sql` → `02_sample_data.sql` → `03_view_queries.sql` (MySQL 8.0.16 이상)
+
+---
+
+### 1. `sql/01_schema.sql`
+
+#### 1-1. 재생 중인 곡은 사용자당 1곡: DB가 보장 (v3.1)
+
+**변경 전**
+```sql
+is_current  TINYINT(1)  NOT NULL DEFAULT 0,   -- 1곡만 1이어야 한다는 규칙은 API가 관리
+```
+
+**변경 후**
+```sql
+is_current  TINYINT(1)  NULL DEFAULT NULL,    -- 재생 중 = 1, 아니면 NULL (0은 쓰지 않음)
+...
+UNIQUE KEY uq_one_current (user_id, is_current),
+CONSTRAINT chk_is_current CHECK (is_current = 1),
+```
+
+**이유**
+- 보고서 한계에 적었던 "사용자당 재생 중인 곡 1곡 제약이 DB에 없음"을 DB 설계로 해결했어요.
+- `UNIQUE (user_id, is_current)`: 같은 사용자에게 `1`은 한 줄만 들어갈 수 있어요. `NULL`은 UNIQUE에서 중복으로 치지 않아서 여러 줄이 가능해요.
+- `CHECK (is_current = 1)`: `1`과 `NULL` 말고 다른 값(예: `0`)은 못 들어가요. MySQL 8.0.16 이상에서 검사돼요.
+- 확인: 재생 중인 곡을 2개로 만들면 `Duplicate entry` 에러, `0`을 넣으면 CHECK 에러가 나요.
+
+#### 1-2. `song_artist`에만 ON DELETE CASCADE (v3.2)
+
+**변경 전**
+```sql
+FOREIGN KEY (song_id)   REFERENCES song (song_id),
+FOREIGN KEY (artist_id) REFERENCES artist (artist_id)
+```
+
+**변경 후**
+```sql
+FOREIGN KEY (song_id)   REFERENCES song (song_id)     ON DELETE CASCADE,
+FOREIGN KEY (artist_id) REFERENCES artist (artist_id) ON DELETE CASCADE
+```
+
+**적용 범위**: `song_artist`의 FK 2개에만 적용했어요. `chart_entry`, `play_queue`, `song_like`, `play_history`의 FK에는 **일부러 넣지 않았어요.**
+
+**이유 (데이터 보호)**
+- CASCADE는 **곡의 일부인 데이터**에만 걸었어요. `song_artist`(곡의 아티스트 정보)는 곡이나 아티스트가 없으면 의미가 없어서, 함께 지워지게 했어요.
+- 반대로 **재생 기록, 좋아요, 재생목록, 차트 순위**는 함부로 지워지면 안 되는 기록이라 CASCADE를 걸지 않았어요. 그래서 사용자나 곡을 실수로 지우려고 해도 FK가 막아 줘요.
+- 탈퇴한 사용자가 돌아왔을 때 기록을 그대로 쓰게 하려면, 행을 지우지 않고 `users`에 탈퇴 여부를 표시하는 방식(soft delete)이 개선 방향이에요.
+
+---
+
+### 2. `sql/02_sample_data.sql`
+
+#### 2-1. `is_current` 값 변경 (v3.1)
+재생 중이 아닌 곡의 `is_current`를 `0`에서 `NULL`로 바꿨어요(1-1 제약에 맞춤). 재생 중인 곡은 그대로 `1`이에요.
+
+#### 2-2. HOT100 22:00 샘플 1행 삭제 (v3.2)
+
+**변경 전**
+```sql
+-- HOT100 22:00
+(2, '2026-11-15 22:00:00', 1, 5),
+(2, '2026-11-15 22:00:00', 2, 4),
+(2, '2026-11-15 22:00:00', 3, 7),
+```
+
+**변경 후**
+```sql
+-- HOT100 22:00
+(2, '2026-11-15 22:00:00', 1, 5),
+(2, '2026-11-15 22:00:00', 2, 4),
+```
+
+**이유**: 22:00 HOT100을 23:00과 겹치는 곡만 남겨서, "23:00 3위 선물 = NEW"가 데이터만 봐도 바로 보이게 정리했어요.
+※ 삭제 전에도 22:00 3위는 강강술래(7번)라 선물은 이미 NEW로 나왔어요. 그래서 **쿼리 결과는 변경 전과 같아요** (1위 사랑하면 ▲1, 2위 RAPLIFE ▼1, 3위 선물 NEW).
+
+---
+
+### 3. `sql/03_view_queries.sql`
+
+#### 3-1. "많이 들은" 쿼리 `JOIN` → `LEFT JOIN` (v3.2)
+
+**변경 후**
+```sql
+FROM song_like l
+JOIN song_info si ON si.song_id = l.song_id
+LEFT JOIN play_history h
+       ON h.user_id = l.user_id AND h.song_id = l.song_id
+WHERE l.user_id = @user_id
+GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
+HAVING play_count >= @min_play
+```
+
+**이유**: 바로 아래 "잊고 지낸" 쿼리와 같은 LEFT JOIN으로 맞춰서 읽기 쉽게 했어요. `HAVING play_count >= 3` 조건 때문에 0회 곡은 똑같이 빠져서 **결과는 같아요.**
+※ `api/app.py`에도 같은 쿼리가 있어요(아직 `JOIN`). 결과는 같지만, 맞추려면 API 담당이 함께 바꿔 주세요.
+
+---
+
+### 4. `images/erd.png`: MySQL Workbench로 다시 그린 ERD
+
+- 이전 ERD(직접 그린 그림)를 **MySQL Workbench의 Reverse Engineer**로 실제 `melon` DB에서 자동 생성한 ERD로 바꿨어요. 그래서 SQL과 100% 같아요.
+- 보고서 3.2절과 PPT 7번의 ERD 그림도 이 파일로 바꿔 주세요.
+- 선 읽는 법 (Crow's Foot 표기)
+  - **실선 = 식별 관계**: 부모의 키가 자식 PK의 일부예요. users–song_like, users–play_queue, song–song_like, song–song_artist, artist–song_artist, chart–chart_entry
+  - **점선 = 비식별 관계**: 부모의 키가 자식에서 일반 FK예요. users–play_history, song–play_history, song–play_queue, song–chart_entry
+  - `play_queue.is_current`는 빈 마름모(◇)로 보여요. NULL을 허용하는 컬럼이라는 뜻이에요(재생 중 = 1, 아니면 NULL).
+- 왼쪽 위 노란 상자 `song_info`는 VIEW예요. FK가 없어서 선이 연결되지 않아요.
+
+### 바뀌지 않은 것
+- 테이블 9개, VIEW `song_info`, 각 테이블의 PK와 컬럼 구성
+- 나머지 쿼리 7개, 나머지 샘플 데이터
+
+
+---
+
 # 📄 파일: `변경내역.md`
 
 ## 변경내역
@@ -688,9 +819,29 @@ ZIP 이름 규칙: `melon_code_v번호.0.zip`
 
 | 버전 | 날짜 | 누가 | 바뀐 내용 |
 |---|---|---|---|
+| `melon_code_v4.0.zip` | 11/24 | 관리자(DB) | **DB 최종본**: 팀원 v3.1·v3.2의 SQL과 `api/app.py`를 합침(재생 중인 곡 1곡 DB 제약, song_artist CASCADE, 많이 들은 LEFT JOIN, HOT100 샘플 정리). **ERD를 MySQL Workbench로 다시 생성**. DB 변경 설명 문서 `docs/06_DB변경사항.md` 추가(실제 코드에 맞게 정리). 02·03·05·00·README 문서 반영. MySQL 8 실행 확인 |
+| `melon_code_v3.2.zip` | 11/24 | 팀원 | song_artist FK에 ON DELETE CASCADE, HOT100 22:00 샘플 1행 삭제, 많이 들은 LEFT JOIN |
+| `melon_code_v3.1.zip` | 11/24 | 팀원 | `play_queue.is_current` NULL/1 + UNIQUE + CHECK (재생 중인 곡 1곡을 DB가 보장), `api/app.py` 반영 |
 | `melon_code_v3.0.zip` | 11/18 | 관리자 | **v2.0(팀원 작업)을 전체 폴더에 합침**: `api/` 추가, `sql/02·03` 교체, `report/`(보고서·PPT) 추가. **재생 기록 API 11번 `POST /api/users/<id>/plays` 추가**(테이블 변경 없음). 보고서·PPT의 API 목록과 개수를 10개에서 11개로 수정. 결정사항 #10·#13·이름 규칙 기록. 실행가이드 기대 결과를 새 샘플 데이터에 맞춤. AI용_전체자료에 API 코드 포함 |
 | `melon_code_v2.0.zip` | 11/17 | 팀원 | Flask API 10개 + Postman 컬렉션, 샘플 데이터 확장(사용자 3, 곡 15, 차트 10위), "많이 들은 = 3회 이상", 보고서·발표 슬라이드 초안 |
 | v1 | 11/16 | 관리자 | 첫 공유: 진행계획, 화면 분석, DB 설계 + ERD, 결정사항, API 목록, 실행가이드, SQL 3개(테이블 9개 + VIEW 1개), 스크린샷, 과제 공지 PDF, AI용_전체자료 |
+
+### v4.0 상세: 바뀐 파일
+
+| 파일 | 내용 |
+|---|---|
+| `sql/01_schema.sql` | `play_queue.is_current` NULL/1 + `UNIQUE(user_id, is_current)` + `CHECK(is_current = 1)`, `song_artist` FK 2개에 `ON DELETE CASCADE` |
+| `sql/02_sample_data.sql` | `is_current` 0 → NULL, HOT100 22:00 1행 삭제 (쿼리 결과는 같음) |
+| `sql/03_view_queries.sql` | "많이 들은" `JOIN` → `LEFT JOIN` (결과 같음) |
+| `api/app.py` | 팀원 v3.2 버전: `is_current`를 NULL로 다루도록 수정 (재생목록 추가, 현재 곡 변경, 삭제) |
+| `images/erd.png` | MySQL Workbench Reverse Engineer로 다시 생성 |
+| `docs/06_DB변경사항.md` | **새 문서**: DB 변경 전/후 코드와 이유 |
+| `docs/02_DB설계.md` | play_queue 설명, Q&A 2개 추가(재생 중 1곡 보장, CASCADE 범위), ERD 설명 |
+| `docs/03_결정사항.md` | 11/24 결정 4줄 (is_current 제약, CASCADE, ERD 도구, LEFT JOIN·HOT100) |
+| `docs/05_실행가이드.md` | 재생목록 기대 결과 `is_current 0` → `NULL` |
+| `docs/00_진행계획.md`, `README.md` | v4.0, DB 완료 체크, 보고서·PPT 반영할 일 추가 |
+
+**보고서·PPT는 아직 그대로예요.** 반영할 곳: 3.2절·PPT 7번 ERD 교체, 4.2절 JSON `"is_current": 0` → `null`, 5.2절·PPT 15번 한계 표에서 "사용자당 1곡 제약이 DB에 없음" 삭제.
 
 ### v3.0 상세: 바뀐 파일
 
@@ -775,6 +926,7 @@ python app.py
 --   화면 ① 홈(최신음악, 멜론차트)  ② 재생목록  ③ 음악서랍 > 좋아요 > 곡
 --   설계 근거: docs/02_DB설계.md
 --   실행: MySQL Workbench에서 이 파일 전체 실행 → 02_sample_data.sql 실행
+--   ※ play_queue 의 CHECK 제약은 MySQL 8.0.16 이상에서만 실제로 검사됨
 -- =====================================================================
 
 DROP DATABASE IF EXISTS melon;
@@ -827,8 +979,8 @@ CREATE TABLE song_artist (
     artist_id     INT      NOT NULL,
     artist_order  TINYINT  NOT NULL DEFAULT 1,
     PRIMARY KEY (song_id, artist_id),
-    FOREIGN KEY (song_id)   REFERENCES song (song_id),
-    FOREIGN KEY (artist_id) REFERENCES artist (artist_id)
+    FOREIGN KEY (song_id)   REFERENCES song (song_id)     ON DELETE CASCADE,
+    FOREIGN KEY (artist_id) REFERENCES artist (artist_id) ON DELETE CASCADE
 );
 
 -- ---------------------------------------------------------------------
@@ -859,16 +1011,22 @@ CREATE TABLE chart_entry (
 -- ---------------------------------------------------------------------
 -- 7. play_queue : 재생목록 (지금 듣는 곡 대기열)
 --    position   : "내설정순" 순서 (1, 2, 3 ...)
---    is_current : 지금 재생 중인 곡이면 1 (사용자당 1곡만 1이어야 함 → API 에서 관리)
+--    is_current : 지금 재생 중인 곡이면 1, 아니면 NULL  (0 은 쓰지 않음)
+--      - CHECK (is_current = 1)        → 넣을 수 있는 값은 1 또는 NULL 뿐
+--      - UNIQUE (user_id, is_current)  → 사용자당 1 은 한 행만 가능
+--                                        NULL 은 UNIQUE 에서 중복으로 치지 않아서 여러 행 가능
+--      → "사용자당 재생 중인 곡은 1곡" 을 API 가 아니라 DB 가 보장
 --    같은 곡을 두 번 넣을 수 있어서 PK 는 (user_id, position)
 -- ---------------------------------------------------------------------
 CREATE TABLE play_queue (
     user_id     INT         NOT NULL,
     position    INT         NOT NULL,
     song_id     INT         NOT NULL,
-    is_current  TINYINT(1)  NOT NULL DEFAULT 0,
+    is_current  TINYINT(1)  NULL DEFAULT NULL,
     added_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, position),
+    UNIQUE KEY uq_one_current (user_id, is_current),
+    CONSTRAINT chk_is_current CHECK (is_current = 1),
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (song_id) REFERENCES song (song_id)
 );
@@ -1047,10 +1205,9 @@ INSERT INTO chart_entry (chart_id, chart_time, rank_no, song_id) VALUES
 (1, '2026-11-15 23:00:00', 8,  14),
 (1, '2026-11-15 23:00:00', 9,  12),
 (1, '2026-11-15 23:00:00', 10, 7),
--- HOT100 22:00
+-- HOT100 22:00 (23:00 3위인 6번 곡 '선물'이 직전 시각에 없도록 조정 → NEW 테스트)
 (2, '2026-11-15 22:00:00', 1, 5),
 (2, '2026-11-15 22:00:00', 2, 4),
-(2, '2026-11-15 22:00:00', 3, 7),
 -- HOT100 23:00
 (2, '2026-11-15 23:00:00', 1, 4),
 (2, '2026-11-15 23:00:00', 2, 5),
@@ -1064,15 +1221,16 @@ INSERT INTO chart_entry (chart_id, chart_time, rank_no, song_id) VALUES
 
 -- ---------------------------------------------------------------------
 -- play_queue  (user 1 스크린샷: With → NEON, NEON 재생 중)
+--   is_current : 재생 중 = 1, 아니면 NULL  (0 을 넣으면 CHECK 제약 위반)
 -- ---------------------------------------------------------------------
 INSERT INTO play_queue (user_id, position, song_id, is_current, added_at) VALUES
-(1, 1, 1,  0, '2026-11-15 23:10:00'),
-(1, 2, 3,  1, '2026-11-15 23:12:00'),
-(2, 1, 4,  1, '2026-11-15 21:00:00'),
-(2, 2, 13, 0, '2026-11-15 21:01:00'),
-(3, 1, 14, 1, '2026-11-15 20:00:00'),
-(3, 2, 15, 0, '2026-11-15 20:01:00'),
-(3, 3, 13, 0, '2026-11-15 20:02:00');
+(1, 1, 1,  NULL, '2026-11-15 23:10:00'),
+(1, 2, 3,  1,    '2026-11-15 23:12:00'),
+(2, 1, 4,  1,    '2026-11-15 21:00:00'),
+(2, 2, 13, NULL, '2026-11-15 21:01:00'),
+(3, 1, 14, 1,    '2026-11-15 20:00:00'),
+(3, 2, 15, NULL, '2026-11-15 20:01:00'),
+(3, 3, 13, NULL, '2026-11-15 20:02:00');
 
 -- ---------------------------------------------------------------------
 -- song_like  (user 1 스크린샷: 최신순으로 With → LOVE ATTACK)
@@ -1215,7 +1373,7 @@ SELECT si.song_id, si.song_title, si.artists, si.cover_url,
        COUNT(h.history_id) AS play_count
 FROM song_like l
 JOIN song_info si ON si.song_id = l.song_id
-JOIN play_history h
+LEFT JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
 GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
@@ -1256,6 +1414,8 @@ ORDER BY last_played_at;
 
 - SQL 은 sql/03_view_queries.sql 의 쿼리를 그대로 옮긴 것이에요. @변수 자리에 %s (입력값) 가 들어가요.
 - 곡 정보 + 아티스트 이름은 VIEW song_info 에서 가져와요.
+- play_queue.is_current 는 재생 중 = 1, 아니면 NULL 이에요 (0 은 CHECK 제약 위반).
+  "사용자당 재생 중인 곡 1개" 는 UNIQUE (user_id, is_current) 로 DB 가 보장해요.
 - 실행: python app.py  →  http://localhost:5000
 """
 from datetime import date, datetime
@@ -1439,7 +1599,7 @@ def now_playing(user_id):
 # =====================================================================
 @app.get("/api/users/<int:user_id>/queue")
 def get_queue(user_id):
-    """재생목록: 곡 수 + 곡 리스트 (내설정순)"""
+    """재생목록: 곡 수 + 곡 리스트 (내설정순).  is_current 는 재생 중 = 1, 아니면 null"""
     if not user_exists(user_id):
         return error("없는 user_id 예요", 404)
     rows = db.fetch_all(
@@ -1471,7 +1631,7 @@ def add_to_queue(user_id):
         cur.execute("SELECT COALESCE(MAX(position), 0) AS last_pos FROM play_queue WHERE user_id = %s", (user_id,))
         last_pos = cur.fetchone()["last_pos"]
         position = last_pos + 1
-        is_current = 1 if last_pos == 0 else 0      # 비어 있던 재생목록이면 바로 재생 곡으로
+        is_current = 1 if last_pos == 0 else None   # 비어 있던 재생목록이면 바로 재생 곡으로, 아니면 NULL (0 은 CHECK 위반)
         cur.execute(
             "INSERT INTO play_queue (user_id, position, song_id, is_current) VALUES (%s, %s, %s, %s)",
             (user_id, position, song_id, is_current),
@@ -1490,7 +1650,9 @@ def add_to_queue(user_id):
 
 @app.patch("/api/users/<int:user_id>/queue/current")
 def set_current(user_id):
-    """현재 재생 곡 바꾸기  body: {"position": 1}  (사용자당 is_current=1 은 1곡만 → 트랜잭션으로 보장)"""
+    """현재 재생 곡 바꾸기  body: {"position": 1}
+    사용자당 is_current=1 은 1곡만 → UNIQUE (user_id, is_current) 로 DB 가 보장.
+    먼저 전부 NULL 로 비운 뒤 지정한 곡만 1 로 바꿔야 UNIQUE 에 걸리지 않아요."""
     if not user_exists(user_id):
         return error("없는 user_id 예요", 404)
     body = request.get_json(silent=True) or {}
@@ -1502,7 +1664,7 @@ def set_current(user_id):
         cur.execute("SELECT song_id FROM play_queue WHERE user_id = %s AND position = %s", (user_id, position))
         if cur.fetchone() is None:
             return error("재생목록에 그 position 이 없어요", 404)
-        cur.execute("UPDATE play_queue SET is_current = 0 WHERE user_id = %s", (user_id,))
+        cur.execute("UPDATE play_queue SET is_current = NULL WHERE user_id = %s AND is_current = 1", (user_id,))
         cur.execute("UPDATE play_queue SET is_current = 1 WHERE user_id = %s AND position = %s", (user_id, position))
 
     return now_playing(user_id)
@@ -1525,8 +1687,10 @@ def remove_from_queue(user_id, position):
             "UPDATE play_queue SET position = position - 1 WHERE user_id = %s AND position > %s ORDER BY position",
             (user_id, position),
         )
-        # 재생 중이던 곡을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
-        if target["is_current"]:
+        # 재생 중이던 곡(is_current = 1)을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
+        # (재생 중이 아니던 곡은 is_current 가 NULL → None 이라 여기 안 들어옴)
+        # 재생 중이던 행은 이미 지웠으므로 1 로 바꿔도 UNIQUE 에 걸리지 않음
+        if target["is_current"] == 1:
             cur.execute(
                 """
                 UPDATE play_queue SET is_current = 1

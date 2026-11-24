@@ -92,7 +92,7 @@ SELECT si.song_id, si.song_title, si.artists, si.cover_url,
        COUNT(h.history_id) AS play_count
 FROM song_like l
 JOIN song_info si ON si.song_id = l.song_id
-JOIN play_history h
+LEFT JOIN play_history h
        ON h.user_id = l.user_id AND h.song_id = l.song_id
 WHERE l.user_id = @user_id
 GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
