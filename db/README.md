@@ -6,4 +6,5 @@
 |---|---|
 | `hw3/` | HW3 (아직 올라온 파일 없음) |
 | [`hw4_erd/`](hw4_erd/) | HW4: 온라인 쇼핑몰 ERD SQL 스크립트와 관계 설명 |
+| [`hw6_api/`](hw6_api/) | HW6: Krible 최신 탭 '내 관심사만 보기' API (FastAPI + PyMySQL) |
 | `quiz/` | 데이터베이스 퀴즈 생성 (아직 올라온 파일 없음) |
