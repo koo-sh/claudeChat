@@ -48,6 +48,10 @@ def clean(row):
     return out
 
 
+def format_dt(dt):
+    return dt.strftime("%Y-%m-%d %H:%M:%S") if isinstance(dt, datetime) else dt
+
+
 def error(message, status):
     return jsonify({"error": message}), status
 
@@ -96,6 +100,8 @@ def home_new_songs():
     if region not in (None, "국내", "해외"):
         return error("region 은 '국내' 또는 '해외' 만 가능해요", 400)
     limit = request.args.get("limit", DEFAULT_NEW_SONGS, type=int)
+    if limit is None or limit < 1:
+        return error("limit 은 1 이상이어야 해요", 400)
 
     rows = db.fetch_all(
         """
@@ -115,6 +121,8 @@ def home_chart():
     """멜론차트 (가장 최근 기준 시각 + 순위 변동)  ?chart_id=1&limit=10"""
     chart_id = request.args.get("chart_id", 1, type=int)
     limit = request.args.get("limit", DEFAULT_CHART_SIZE, type=int)
+    if limit is None or limit < 1:
+        return error("limit 은 1 이상이어야 해요", 400)
     now = now_param()
 
     chart = db.fetch_one("SELECT chart_id, chart_name FROM chart WHERE chart_id = %s", (chart_id,))
@@ -132,7 +140,7 @@ def home_chart():
     )
     cur_time = t["cur_time"] if t else None
     if cur_time is None:
-        return jsonify({**chart, "base_time": None, "items": []})
+        return jsonify({**chart, "base_time": None, "prev_time": None, "items": []})
 
     p = db.fetch_one(
         "SELECT MAX(chart_time) AS prev_time FROM chart_entry WHERE chart_id = %s AND chart_time < %s",
@@ -166,8 +174,8 @@ def home_chart():
 
     return jsonify({
         **chart,
-        "base_time": clean({"t": cur_time})["t"],
-        "prev_time": clean({"t": prev_time})["t"],
+        "base_time": format_dt(cur_time),
+        "prev_time": format_dt(prev_time),
         "items": items,
     })
 
@@ -283,8 +291,6 @@ def remove_from_queue(user_id, position):
             (user_id, position),
         )
         # 재생 중이던 곡(is_current = 1)을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
-        # (재생 중이 아니던 곡은 is_current 가 NULL → None 이라 여기 안 들어옴)
-        # 재생 중이던 행은 이미 지웠으므로 1 로 바꿔도 UNIQUE 에 걸리지 않음
         if target["is_current"] == 1:
             cur.execute(
                 """
@@ -331,7 +337,7 @@ def liked_songs(user_id):
                    COUNT(h.history_id) AS play_count
             FROM song_like l
             JOIN song_info si ON si.song_id = l.song_id
-            JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
+            LEFT JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
             WHERE l.user_id = %s
             GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
             HAVING play_count >= %s
@@ -421,7 +427,6 @@ def record_play(user_id):
         cur.execute("INSERT INTO play_history (user_id, song_id) VALUES (%s, %s)", (user_id, song_id))
         history_id = cur.lastrowid          # AUTO_INCREMENT 로 매겨진 번호
 
-    # 방금 쌓인 기록까지 포함해서, 이 사용자가 이 곡을 몇 번 / 마지막으로 언제 들었는지
     stats = db.fetch_one(
         """
         SELECT COUNT(*) AS play_count, MAX(played_at) AS last_played_at

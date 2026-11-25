@@ -1,6 +1,6 @@
 # AI용 전체자료: 멜론 DB 텀프로젝트
 
-> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL + API 코드)가 들어 있어요.** (버전 v4.0) ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
+> **이 파일 하나에 프로젝트 자료 전부(문서 + SQL + API 코드)가 들어 있어요.** (버전 v5.0, 코드 최종) ZIP을 열 수 없는 AI에도 이 파일만 올리면 돼요.
 > 이 파일은 ZIP을 만들 때 자동으로 합쳐서 만들어요. **직접 고치지 말고**, 고칠 내용은 원본 파일(`docs/`, `sql/`)에서 고쳐 주세요.
 
 ---
@@ -30,7 +30,7 @@
 
 ### 현재 상태
 - **완료**: 진행 계획, 화면 분석, 테이블 설계(9개 + VIEW 1개, 3NF), ERD, 샘플 데이터(사용자 3, 곡 15, 차트 10위), 화면별 SELECT 쿼리 8개, **Flask API 11개(`api/app.py`, 실행 확인함)**, Postman 컬렉션, **보고서·발표 슬라이드 초안**(`report/`)
-- **남은 것**: `00_진행계획.md` 2절 체크리스트의 빈칸이에요. 예: 역할·발표자 이름 채우기, PPT 14번을 실제 Postman 캡처로 교체, MySQL 8에서 최종 확인, 리허설, 제출
+- **코드(DB + API)는 최종 완료**(MySQL 8 확인). **남은 것**은 보고서·PPT 마무리예요. `00_진행계획.md` 2절 체크리스트의 빈칸이에요. 예: 역할·발표자 이름 채우기, PPT 14번을 실제 Postman 캡처로 교체, MySQL 8에서 최종 확인, 리허설, 제출
 - 보고서(.docx)와 PPT(.pptx)는 이 파일에 들어 있지 않아요. 필요하면 `report/` 폴더의 파일을 따로 첨부해 달라고 하세요.
 - 역할 A(DB), B(API 홈), C(API 재생목록과 좋아요), D(문서와 발표)는 `00_진행계획.md` 1절에 있어요. 각 역할의 할 일 체크리스트는 2절에 있어요.
 
@@ -110,8 +110,8 @@
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
 > 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL과 API 실행해 보기
 >
-> 지금 버전: **v4.0**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
-> **v4.0 핵심**: DB 최종본. "재생 중인 곡은 사용자당 1곡"을 DB 제약(UNIQUE + CHECK)으로 보장, CASCADE는 song_artist에만, ERD를 Workbench로 다시 생성. MySQL 8에서 실행 확인 완료.
+> 지금 버전: **v5.0 (코드 최종)**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
+> **v5.0 핵심**: **코드(DB + API) 최종 완료.** DB는 "재생 중인 곡 1곡" 제약(UNIQUE + CHECK)·song_artist CASCADE·Workbench ERD, API는 11개 + limit 검사(1 이상)까지 MySQL 8에서 확인했어요. 남은 건 보고서·PPT 마무리예요.
 
 ### AI(Claude, ChatGPT, Gemini 등)와 같이 작업할 때
 
@@ -184,9 +184,11 @@
 | [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE 9개 + CREATE VIEW 1개 | ✅ 실행 확인 |
 | [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 샘플 데이터 (사용자 3, 곡 15, 차트 10위까지) | ✅ 실행 확인 |
 | [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT 8개 | ✅ 실행 확인 |
-| [`api/`](api/README.md) | Flask API 11개 (`app.py`, `db.py`, `config.example.py`, `requirements.txt`, `postman_collection.json`, 실행 방법 `README.md`) | ✅ 실행 확인 |
+| [`api/`](api/README.md) | Flask API 11개 (`app.py`, `db.py`, `config.example.py`, `requirements.txt`, `postman_collection.json`, 실행 방법 `README.md`) | ✅ MySQL 8 확인 (최종) |
 | `report/보고서.docx` | 보고서 초안 (이름·역할 칸 비어 있음) | 🔶 초안 |
-| `report/발표슬라이드.pptx` | 발표 슬라이드 초안 16장 (발표자 칸 비어 있음, 14번 Postman 캡처 교체 필요) | 🔶 초안 |
+| `report/발표슬라이드.pptx` | 발표 슬라이드 초안 16장 (발표자 칸 비어 있음, 14번에 Postman 캡처 넣기) | 🔶 초안 |
+| `images/postman_new_songs.png` | Postman 실행 화면 캡처 (`GET /api/home/new-songs`, 200 OK) → **PPT 14번용** | ✅ |
+| `images/browser_new_songs.webp` | 같은 API를 브라우저에서 연 JSON 화면 (보고서 4.2절 참고용) | ✅ |
 
 
 ---
@@ -213,7 +215,7 @@
 | 4 | 보고서 + 슬라이드 | 원고 넘기기 → 합치기 → 최종 점검과 리허설 (전원) | |
 | 5 | 제출 + 발표 | 제출(마감 직전은 피하기), 10분 발표 + Q&A 5분 | 제출 11/29 23:59 (공식) |
 
-> **현재 상태 (v4.0)**: **DB 최종 완료**(MySQL 8 실행 확인, Workbench ERD). API 11개 구현, 보고서와 발표 슬라이드 초안 완성. 남은 것은 아래 체크리스트의 빈칸이에요.
+> **현재 상태 (v5.0)**: **코드(DB + API) 최종 완료**, MySQL 8에서 확인. 보고서와 발표 슬라이드 초안 완성. **남은 것은 보고서·PPT 마무리(Phase 4~5)**예요.
 
 각 단계는 **앞 단계가 끝나야 시작**하는 게 원칙이에요. 단, 2단계에서 D(문서)는 1장(앱/화면 소개)을 먼저 써도 돼요.
 
@@ -234,13 +236,13 @@
 
 ### 2. 단계별 상세 계획
 
-#### Phase 1. 킥오프 (전원)
-- [ ] 이 문서와 `docs/03_결정사항.md`를 읽고 **열린 결정사항**에 의견 남기기
-- [ ] 역할 A~D 배정 (위 표에 이름 채우기)
-- [ ] 단계별 날짜 정해서 0절 표에 적기
-- [ ] 각자 PC에 MySQL, Workbench, Python, VSCode, Postman 설치 (Week9_2 자료)
-- [ ] 각자 `sql/01 → 02 → 03` 실행해서 **같은 결과가 나오는지 확인** → [`05_실행가이드.md`](05_실행가이드.md)
-- [ ] 테이블 설계에 이의가 있으면 이번 단계에서 말하기. Phase 2 이후에 바뀌면 API를 다 고쳐야 해요.
+#### Phase 1. 킥오프 (전원) — 완료 (코드 담당 2명이 DB / API로 나눠서 진행)
+- [x] 이 문서와 `docs/03_결정사항.md`를 읽고 **열린 결정사항**에 의견 남기기
+- [x] 역할 A~D 배정 (위 표에 이름 채우기)
+- [x] 단계별 날짜 정해서 0절 표에 적기
+- [x] 각자 PC에 MySQL, Workbench, Python, VSCode, Postman 설치 (Week9_2 자료)
+- [x] 각자 `sql/01 → 02 → 03` 실행해서 **같은 결과가 나오는지 확인** → [`05_실행가이드.md`](05_실행가이드.md)
+- [x] 테이블 설계에 이의가 있으면 이번 단계에서 말하기. Phase 2 이후에 바뀌면 API를 다 고쳐야 해요.
 
 #### Phase 2. DB 확정 + API 개발
 **A (DB)**
@@ -268,9 +270,10 @@
 #### Phase 3. 테스트 + 명세
 - [x] B, C: Postman Collection → `api/postman_collection.json` (11번 요청은 v3.0에서 추가)
 - [x] API별 입력값과 JSON 응답 → 보고서 4.2절
-- [ ] PPT 14번의 JSON 예시를 **실제 Postman 화면 캡처**로 교체
-- [ ] A: 쓰기 API 실행 후 DB가 실제로 바뀌는지 **MySQL 8에서** 확인 (좋아요 → song_like 행 추가, 재생 기록 → play_history 행 추가)
-- [ ] 전원: 다른 사람 PC에서도 API가 실행되는지 교차 확인
+- [x] Postman 실제 화면 캡처 → `images/postman_new_songs.png`
+- [ ] PPT 14번에 위 캡처를 넣고 "실제 캡처로 교체" 안내 문구 지우기
+- [x] 쓰기 API 실행 후 DB가 실제로 바뀌는지 **MySQL 8에서** 확인 (API 담당, v4.11) (좋아요 → song_like 행 추가, 재생 기록 → play_history 행 추가)
+- [x] 다른 PC에서 확인: DB 담당 PC에서 SQL, API 담당 PC에서 API (둘 다 MySQL 8)
 
 #### Phase 4. 보고서 + 슬라이드
 - [ ] 보고서·PPT에 DB 최종본 반영: 3.2절·PPT 7번 ERD 그림 교체, 4.2절 JSON의 `"is_current": 0` → `null`, 5.2절·PPT 15번 한계 표의 "사용자당 1곡 제약이 DB에 없음" 행 삭제(해결됨) → 설계 포인트(PPT 8번)로 이동
@@ -566,6 +569,7 @@ PK = (user_id, position)
 | 11/24 | | `ON DELETE CASCADE`는 `song_artist`에만 (곡의 일부). 재생 기록·좋아요·재생목록·차트는 데이터 보호를 위해 넣지 않음 (v3.2) |
 | 11/24 | 6 | ERD 도구 = **MySQL Workbench** (Reverse Engineer로 실제 DB에서 생성) |
 | 11/24 | | "많이 들은" 쿼리 `LEFT JOIN`으로 통일 (결과 동일). HOT100 22:00 샘플 1행 정리 (결과 동일) (v3.2) |
+| 11/25 | | API `limit`은 1 이상 (0·음수는 400). 코드(DB + API) 최종 확정 → v5.0 |
 
 
 ---
@@ -599,6 +603,7 @@ PK = (user_id, position)
 | 11 | 재생목록·좋아요 | POST | `/api/users/<user_id>/plays` | 재생 기록 추가 `{"song_id": 2}`. 곡을 한 번 들을 때마다 play_history 1행 → "많이 들은", "잊고 지낸"의 원본 | C | ✅ |
 
 - 조회 5개 + 쓰기 6개. 에러는 `{"error": "이유"}`와 상태 코드(400 잘못된 입력, 404 없음, 409 중복)로 돌려줘요.
+- `limit`은 **1 이상**이어야 해요. 0이나 음수면 400 에러를 돌려줘요(숫자가 아니면 기본값 사용: 최신음악 8, 차트 10).
 - 테스트용으로 `?now=2026-11-15 23:30:00`을 붙이면 차트와 "잊고 지낸"의 기준 시각을 샘플 데이터에 맞춰 고정할 수 있어요.
 
 **발표 시연 추천 흐름 (11번)**: `8. 많이 들은` 조회(With 1곡) → `11. 재생 기록 추가` `{"song_id": 2}` 3번 → `8. 많이 들은` 다시 조회(With, LOVE ATTACK 2곡). 기록이 쌓이면 화면이 바뀌는 걸 보여줄 수 있어요.
@@ -676,7 +681,8 @@ PK = (user_id, position)
 
 `api/README.md`대로 실행하면 돼요. 요약하면 다음과 같아요.
 1. `api/config.example.py`를 복사해서 `api/config.py`를 만들고 MySQL 비밀번호를 적어요.
-2. `cd api` → `pip install -r requirements.txt` → `python app.py` (주소: `http://localhost:5000`)
+2. `cd api` → `pip install -r requirements.txt` → `python app.py` (주소: `http://127.0.0.1:5000`)
+   - **팁**: 폴더 경로에 한글이 있으면 실행이 꼬일 수 있어요. `C:\melon\api`처럼 **영문 경로**에 두고 실행하세요.
 3. Postman에서 `api/postman_collection.json`을 Import하면 요청 11개가 화면별 폴더로 들어와요.
 
 ### 6. 자주 나는 에러
@@ -789,7 +795,7 @@ HAVING play_count >= @min_play
 ```
 
 **이유**: 바로 아래 "잊고 지낸" 쿼리와 같은 LEFT JOIN으로 맞춰서 읽기 쉽게 했어요. `HAVING play_count >= 3` 조건 때문에 0회 곡은 똑같이 빠져서 **결과는 같아요.**
-※ `api/app.py`에도 같은 쿼리가 있어요(아직 `JOIN`). 결과는 같지만, 맞추려면 API 담당이 함께 바꿔 주세요.
+※ `api/app.py`의 같은 쿼리도 v4.11에서 `LEFT JOIN`으로 맞췄어요. 이제 두 파일이 같아요.
 
 ---
 
@@ -819,12 +825,31 @@ ZIP 이름 규칙: `melon_code_v번호.0.zip`
 
 | 버전 | 날짜 | 누가 | 바뀐 내용 |
 |---|---|---|---|
+| `melon_code_v5.0.zip` | 11/25 | 관리자(DB) | **코드 최종본.** 팀원 v4.11의 `api/app.py` 합침, Postman 캡처 이미지 추가. DB·API 전체 재검사(DB 33항목, API 71항목, Postman 요청 15개, SQL 파일과 app.py 쿼리 일치) 모두 통과. 문서 정리 |
+| `melon_code_v4.11.zip` | 11/25 | 팀원(API) | `limit` 1 이상 검사(400), 많이 들은 `LEFT JOIN`(SQL 파일과 일치), 차트 직전 시각 없을 때 `prev_time: null`, MySQL 8 + Postman 테스트, Postman 캡처 |
 | `melon_code_v4.0.zip` | 11/24 | 관리자(DB) | **DB 최종본**: 팀원 v3.1·v3.2의 SQL과 `api/app.py`를 합침(재생 중인 곡 1곡 DB 제약, song_artist CASCADE, 많이 들은 LEFT JOIN, HOT100 샘플 정리). **ERD를 MySQL Workbench로 다시 생성**. DB 변경 설명 문서 `docs/06_DB변경사항.md` 추가(실제 코드에 맞게 정리). 02·03·05·00·README 문서 반영. MySQL 8 실행 확인 |
 | `melon_code_v3.2.zip` | 11/24 | 팀원 | song_artist FK에 ON DELETE CASCADE, HOT100 22:00 샘플 1행 삭제, 많이 들은 LEFT JOIN |
 | `melon_code_v3.1.zip` | 11/24 | 팀원 | `play_queue.is_current` NULL/1 + UNIQUE + CHECK (재생 중인 곡 1곡을 DB가 보장), `api/app.py` 반영 |
 | `melon_code_v3.0.zip` | 11/18 | 관리자 | **v2.0(팀원 작업)을 전체 폴더에 합침**: `api/` 추가, `sql/02·03` 교체, `report/`(보고서·PPT) 추가. **재생 기록 API 11번 `POST /api/users/<id>/plays` 추가**(테이블 변경 없음). 보고서·PPT의 API 목록과 개수를 10개에서 11개로 수정. 결정사항 #10·#13·이름 규칙 기록. 실행가이드 기대 결과를 새 샘플 데이터에 맞춤. AI용_전체자료에 API 코드 포함 |
 | `melon_code_v2.0.zip` | 11/17 | 팀원 | Flask API 10개 + Postman 컬렉션, 샘플 데이터 확장(사용자 3, 곡 15, 차트 10위), "많이 들은 = 3회 이상", 보고서·발표 슬라이드 초안 |
 | v1 | 11/16 | 관리자 | 첫 공유: 진행계획, 화면 분석, DB 설계 + ERD, 결정사항, API 목록, 실행가이드, SQL 3개(테이블 9개 + VIEW 1개), 스크린샷, 과제 공지 PDF, AI용_전체자료 |
+
+### v5.0 상세: 바뀐 파일
+
+| 파일 | 내용 |
+|---|---|
+| `api/app.py` | 팀원 v4.11 버전 (limit 검사, 많이 들은 LEFT JOIN, prev_time 처리) |
+| `images/postman_new_songs.png` | **새 파일**: Postman 실행 화면 캡처 (PPT 14번용) |
+| `images/browser_new_songs.webp` | **새 파일**: 브라우저 JSON 화면 (보고서 4.2절 참고용) |
+| `docs/00_진행계획.md` | 코드 완료 체크, 남은 일 = 보고서·PPT |
+| `docs/04_API명세.md` | limit 규칙 추가 |
+| `docs/05_실행가이드.md` | API 주소 127.0.0.1, 영문 경로 실행 팁 |
+| `docs/06_DB변경사항.md` | "app.py는 아직 JOIN" → 일치함으로 수정 |
+| `docs/03_결정사항.md`, `README.md`, `AI용_전체자료.md` | v5.0 반영 |
+
+**SQL 3개, ERD, Postman 컬렉션은 v4.0과 같아요.**
+
+**보고서·PPT에 남은 일**: ERD 그림 교체(보고서 3.2절, PPT 7번), 4.2절 JSON `"is_current": 0` → `null`, 한계 표 "사용자당 1곡 제약이 DB에 없음" 삭제(보고서 5.2절, PPT 15번), PPT 14번에 Postman 캡처 넣기, 표지·역할·발표자 이름 채우기.
 
 ### v4.0 상세: 바뀐 파일
 
@@ -1453,6 +1478,10 @@ def clean(row):
     return out
 
 
+def format_dt(dt):
+    return dt.strftime("%Y-%m-%d %H:%M:%S") if isinstance(dt, datetime) else dt
+
+
 def error(message, status):
     return jsonify({"error": message}), status
 
@@ -1501,6 +1530,8 @@ def home_new_songs():
     if region not in (None, "국내", "해외"):
         return error("region 은 '국내' 또는 '해외' 만 가능해요", 400)
     limit = request.args.get("limit", DEFAULT_NEW_SONGS, type=int)
+    if limit is None or limit < 1:
+        return error("limit 은 1 이상이어야 해요", 400)
 
     rows = db.fetch_all(
         """
@@ -1520,6 +1551,8 @@ def home_chart():
     """멜론차트 (가장 최근 기준 시각 + 순위 변동)  ?chart_id=1&limit=10"""
     chart_id = request.args.get("chart_id", 1, type=int)
     limit = request.args.get("limit", DEFAULT_CHART_SIZE, type=int)
+    if limit is None or limit < 1:
+        return error("limit 은 1 이상이어야 해요", 400)
     now = now_param()
 
     chart = db.fetch_one("SELECT chart_id, chart_name FROM chart WHERE chart_id = %s", (chart_id,))
@@ -1537,7 +1570,7 @@ def home_chart():
     )
     cur_time = t["cur_time"] if t else None
     if cur_time is None:
-        return jsonify({**chart, "base_time": None, "items": []})
+        return jsonify({**chart, "base_time": None, "prev_time": None, "items": []})
 
     p = db.fetch_one(
         "SELECT MAX(chart_time) AS prev_time FROM chart_entry WHERE chart_id = %s AND chart_time < %s",
@@ -1571,8 +1604,8 @@ def home_chart():
 
     return jsonify({
         **chart,
-        "base_time": clean({"t": cur_time})["t"],
-        "prev_time": clean({"t": prev_time})["t"],
+        "base_time": format_dt(cur_time),
+        "prev_time": format_dt(prev_time),
         "items": items,
     })
 
@@ -1688,8 +1721,6 @@ def remove_from_queue(user_id, position):
             (user_id, position),
         )
         # 재생 중이던 곡(is_current = 1)을 지웠으면 같은 자리(다음 곡) 또는 마지막 곡을 재생 곡으로
-        # (재생 중이 아니던 곡은 is_current 가 NULL → None 이라 여기 안 들어옴)
-        # 재생 중이던 행은 이미 지웠으므로 1 로 바꿔도 UNIQUE 에 걸리지 않음
         if target["is_current"] == 1:
             cur.execute(
                 """
@@ -1736,7 +1767,7 @@ def liked_songs(user_id):
                    COUNT(h.history_id) AS play_count
             FROM song_like l
             JOIN song_info si ON si.song_id = l.song_id
-            JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
+            LEFT JOIN play_history h ON h.user_id = l.user_id AND h.song_id = l.song_id
             WHERE l.user_id = %s
             GROUP BY si.song_id, si.song_title, si.artists, si.cover_url
             HAVING play_count >= %s
@@ -1826,7 +1857,6 @@ def record_play(user_id):
         cur.execute("INSERT INTO play_history (user_id, song_id) VALUES (%s, %s)", (user_id, song_id))
         history_id = cur.lastrowid          # AUTO_INCREMENT 로 매겨진 번호
 
-    # 방금 쌓인 기록까지 포함해서, 이 사용자가 이 곡을 몇 번 / 마지막으로 언제 들었는지
     stats = db.fetch_one(
         """
         SELECT COUNT(*) AS play_count, MAX(played_at) AS last_played_at

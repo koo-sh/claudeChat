@@ -9,8 +9,8 @@
 > 3. [`docs/03_결정사항.md`](docs/03_결정사항.md): **열린 결정사항에 의견 남기기**
 > 4. [`docs/05_실행가이드.md`](docs/05_실행가이드.md): 내 PC에서 SQL과 API 실행해 보기
 >
-> 지금 버전: **v4.0**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
-> **v4.0 핵심**: DB 최종본. "재생 중인 곡은 사용자당 1곡"을 DB 제약(UNIQUE + CHECK)으로 보장, CASCADE는 song_artist에만, ERD를 Workbench로 다시 생성. MySQL 8에서 실행 확인 완료.
+> 지금 버전: **v5.0 (코드 최종)**. 무엇이 바뀌었는지(파일별 상세 포함)는 [`변경내역.md`](변경내역.md)에 있어요.
+> **v5.0 핵심**: **코드(DB + API) 최종 완료.** DB는 "재생 중인 곡 1곡" 제약(UNIQUE + CHECK)·song_artist CASCADE·Workbench ERD, API는 11개 + limit 검사(1 이상)까지 MySQL 8에서 확인했어요. 남은 건 보고서·PPT 마무리예요.
 
 ## AI(Claude, ChatGPT, Gemini 등)와 같이 작업할 때
 
@@ -83,6 +83,8 @@
 | [`sql/01_schema.sql`](sql/01_schema.sql) | CREATE TABLE 9개 + CREATE VIEW 1개 | ✅ 실행 확인 |
 | [`sql/02_sample_data.sql`](sql/02_sample_data.sql) | 샘플 데이터 (사용자 3, 곡 15, 차트 10위까지) | ✅ 실행 확인 |
 | [`sql/03_view_queries.sql`](sql/03_view_queries.sql) | 화면별 SELECT 8개 | ✅ 실행 확인 |
-| [`api/`](api/README.md) | Flask API 11개 (`app.py`, `db.py`, `config.example.py`, `requirements.txt`, `postman_collection.json`, 실행 방법 `README.md`) | ✅ 실행 확인 |
+| [`api/`](api/README.md) | Flask API 11개 (`app.py`, `db.py`, `config.example.py`, `requirements.txt`, `postman_collection.json`, 실행 방법 `README.md`) | ✅ MySQL 8 확인 (최종) |
 | `report/보고서.docx` | 보고서 초안 (이름·역할 칸 비어 있음) | 🔶 초안 |
-| `report/발표슬라이드.pptx` | 발표 슬라이드 초안 16장 (발표자 칸 비어 있음, 14번 Postman 캡처 교체 필요) | 🔶 초안 |
+| `report/발표슬라이드.pptx` | 발표 슬라이드 초안 16장 (발표자 칸 비어 있음, 14번에 Postman 캡처 넣기) | 🔶 초안 |
+| `images/postman_new_songs.png` | Postman 실행 화면 캡처 (`GET /api/home/new-songs`, 200 OK) → **PPT 14번용** | ✅ |
+| `images/browser_new_songs.webp` | 같은 API를 브라우저에서 연 JSON 화면 (보고서 4.2절 참고용) | ✅ |
